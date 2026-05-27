@@ -6,17 +6,18 @@
     <title>LookuLooku</title>
 </head>
 <body>
-    <h1>How va ooo !</h1>
-    <h2>Météo à <%= ville %></h2>
+   <h1>How va ooo !</h1>
 
-<p>Température: <%= temperature %>°C</p>
-
-<p>Ressenti: <%= ressenti %>°C</p>
-
-<p>Conditions: <%= description %></p>
-
-<p>Nuages: <%= nuages %>%</p>
-
-<p>Heure: <%= heure %></p>
+<% meteos.forEach((meteo) => { %>
+  <h2>Météo à <%= meteo.name %></h2>
+  <p>Température: <%= meteo.main.temp.toFixed(2) %>°C</p>
+  <p>Ressenti: <%= meteo.main.feels_like.toFixed(2) %>°C</p>
+  <p>Conditions: <%= meteo.weather[0].description %></p>
+  <p>Nuages: <%= meteo.clouds.all %>%</p>
+  <p>
+    Heure:
+    <%= new Date(meteo.dt * 1000).toLocaleTimeString("fr-FR") %>
+  </p>
+<% }) %>
 </body>
 </html>

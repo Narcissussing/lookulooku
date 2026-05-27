@@ -6,46 +6,41 @@ const app = express();
 const port = 666;
 const OW_API_KEY = process.env.OPENWEATHER_API_KEY;
 const OW_URL = "https://api.openweathermap.org/data/2.5/weather";
+const villes = ["Trilport,FR", "Meaux,FR"];
 
 // "https://api.openweathermap.org/data/2.5/weather?q=Trilport,FR&appid"
 app.set("view engine", "ejs");
 app.use(express.static("public"));
 
+async function recupererMeteo(ville) {
+  const { data } = await axios.get(OW_URL, {
+    params: {
+      q: ville,
+      appid: OW_API_KEY,
+      units: "metric",
+      lang: "fr",
+    },
+  });
+
+  return data;
+}
+
 app.get("/", async (req, res) => {
   try {
-    const response = await axios.get(OW_URL, {
-      params: {
-        q: "Trilport,FR",
-        appid: OW_API_KEY,
-        units: "metric",
-        lang: "fr",
-      },
-    });
-    const meteoTrilport = response.data;
-    res.render("index.ejs", {   
-      ville: meteoTrilport.name,
+    const meteos = [];
 
-      temperature: meteoTrilport.main.temp.toFixed(2),
-
-      ressenti: meteoTrilport.main.feels_like.toFixed(2),
-
-      description: meteoTrilport.weather[0].description,
-
-      nuages: meteoTrilport.clouds.all,
-
-      heure: new Date(meteoTrilport.dt * 1000).toLocaleTimeString("fr-FR"),
-    });
+    for (const ville of villes) {
+      const meteo = await recupererMeteo(ville);
+      meteos.push(meteo);
+    }
+    res.render("index.ejs", { meteos });
   } catch (error) {
-  console.error(error.message);
-  res.render("index.ejs", {
-    ville: "Erreur",
-    temperature: "—",
-    ressenti: "—",
-    description: error.message,
-    nuages: "—",
-    heure: "—",
-  });
-}
+    console.error(error.message);
+    res.render("index.ejs", {
+      meteos: [],
+      erreur: error.message,
+    });
+  }
 });
 
 app.listen(port, () => {
