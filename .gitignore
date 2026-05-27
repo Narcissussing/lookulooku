@@ -1,0 +1,71 @@
+# Dépendances Node
+node_modules
+package-lock.json.backup
+
+# Variables d'environnement et secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.pem
+*.key
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Fichiers système macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+
+# Fichiers système Windows (au cas où)
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Éditeurs / IDE
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea
+*.swp
+*.swo
+*~
+
+# Builds et artefacts
+dist
+build
+out
+.next
+.cache
+.parcel-cache
+
+# Tests et couverture
+coverage
+.nyc_output
+*.lcov
+
+# Sessions et stockage temporaire
+sessions
+tmp
+temp
+*.tmp
+
+# Bases de données locales (si jamais on en ajoute une plus tard)
+*.sqlite
+*.sqlite3
+*.db
+
+# Uploads d'utilisateurs (si applicable plus tard)
+uploads
+
+# Dossier de captures d'écran pour le README
+# screenshots
