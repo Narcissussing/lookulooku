@@ -1,23 +1,31 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LookuLooku</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LookuLooku</title>
 </head>
 <body>
-   <h1>How va ooo !</h1>
+  <h1>How va ooo !</h1>
 
-<% meteos.forEach((meteo) => { %>
-  <h2>Météo à <%= meteo.name %></h2>
-  <p>Température: <%= meteo.main.temp.toFixed(2) %>°C</p>
-  <p>Ressenti: <%= meteo.main.feels_like.toFixed(2) %>°C</p>
-  <p>Conditions: <%= meteo.weather[0].description %></p>
-  <p>Nuages: <%= meteo.clouds.all %>%</p>
-  <p>
-    Heure:
-    <%= new Date(meteo.dt * 1000).toLocaleTimeString("fr-FR") %>
-  </p>
-<% }) %>
+  <% if (locals.erreur) { %>
+    <%# Cas d'erreur : on prévient l'utilisateur %>
+    <p class="erreur">Oups : <%= erreur %></p>
+  <% } else if (meteos && meteos.length > 0) { %>
+    <%# Cas normal : on affiche les cartes météo %>
+    <% meteos.forEach((meteo) => { %>
+      <section class="carte">
+        <h2>Météo à <%= meteo.name %></h2>
+        <p>Température : <%= meteo.main.temp.toFixed(2) %>°C</p>
+        <p>Ressenti : <%= meteo.main.feels_like.toFixed(2) %>°C</p>
+        <p>Conditions : <%= meteo.weather[0].description %></p>
+        <p>Nuages : <%= meteo.clouds.all %>%</p>
+        <p>Heure : <%= new Date(meteo.dt * 1000).toLocaleTimeString("fr-FR") %></p>
+      </section>
+    <% }) %>
+  <% } else { %>
+    <%# Cas où on n'a pas de données mais pas d'erreur explicite non plus %>
+    <p>Aucune donnée météo disponible.</p>
+  <% } %>
 </body>
 </html>
