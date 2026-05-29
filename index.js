@@ -134,18 +134,35 @@ function evaluerCreneau(donnees) {
 
 app.get("/", async (req, res) => {
   try {
-    const passagesBruts = await recupererProchainsPassages();
-    const departs = extraireDeparts(passagesBruts);
+    const passagesMeaux = await recupererProchainsPassages(
+      "STIF:StopArea:SP:43161:",
+    );
+
+    const passagesTrilport = await recupererProchainsPassages(
+      "STIF:StopArea:SP:47962:",
+    );
+
+    const departsMeaux = extraireDeparts(passagesMeaux);
+    const departsTrilport = extraireDeparts(passagesTrilport);
 
     const meteos = await Promise.all(villes.map(recupererMeteo));
     const previsions = await Promise.all(villes.map(recupererPrevisions));
     const donneesMeteo = [];
 
-    const departsRetour = departs
+    // Départs utiles depuis Meaux
+    const departsRetour = departsMeaux
       .filter(
         (train) =>
           train.destination === "Château-Thierry" ||
           train.destination === "La Ferté-Milon",
+      )
+      .sort((a, b) => new Date(a.heure) - new Date(b.heure));
+
+    // Départs utiles depuis Trilport
+    const departsAller = departsTrilport
+      .filter(
+        (train) =>
+          train.destination === "Meaux" || train.destination === "Paris Est",
       )
       .sort((a, b) => new Date(a.heure) - new Date(b.heure));
 
@@ -187,14 +204,21 @@ app.get("/", async (req, res) => {
     // Associer les trains aux créneaux retour
     for (const creneau of creneauxEvalues) {
       if (creneau.direction === "retour") {
-        const heureGym = creneau.realHeure.replace("h", ":");
-
         creneau.trains = trouverTrainsPourCreneau(
           departsRetour,
-          heureGym,
+          creneau.realHeure,
         ).slice(0, 2);
       }
     }
+    for (const creneau of creneauxEvalues) {
+      if (creneau.direction === "aller") {
+        creneau.trainsAller = trouverTrainsPourCreneau(
+          departsAller,
+          creneau.realHeure,
+        ).slice(0, 2);
+      }
+    }
+
     res.render("index.ejs", {
       meteos,
       creneaux: creneauxEvalues,
@@ -212,13 +236,13 @@ app.get("/", async (req, res) => {
 });
 
 // Récupérer les prochains passages pour une zone d'arrêt
-async function recupererProchainsPassages() {
+async function recupererProchainsPassages(monitoringRef) {
   const { data } = await axios.get(`${IDFM_URL}/stop-monitoring`, {
     headers: {
       apikey: IDFM_API_KEY,
     },
     params: {
-      MonitoringRef: "STIF:StopArea:SP:43161:",
+      MonitoringRef: monitoringRef,
     },
   });
   return data;
@@ -246,11 +270,21 @@ function formaterHeure(iso) {
     minute: "2-digit",
   });
 }
-// Trouver les trains disponibles après un créneau gym
-function trouverTrainsPourCreneau(trains, heureGym) {
-  return trains.filter((train) => {
-    return train.heureFormatee >= heureGym;
-  });
+// Trouver les trains disponibles après une heure de départ (format "17h30")
+function trouverTrainsPourCreneau(trains, realHeure) {
+  // Convertir "17h30" en Date locale (heure Paris si serveur en Paris)
+  const [heures, minutes] = realHeure.split("h").map(Number);
+  const maintenant = new Date();
+  const seuil = new Date(
+    maintenant.getFullYear(),
+    maintenant.getMonth(),
+    maintenant.getDate(),
+    heures,
+    minutes,
+  );
+
+  // new Date() compare toujours en millisecondes UTC — pas besoin de correction manuelle
+  return trains.filter((train) => new Date(train.heure) >= seuil);
 }
 
 app.listen(port, () => {

@@ -64,6 +64,13 @@
           <li class="creneau">
             <span class="heure"><%= c.realHeure %></span>
             <span class="resume"><%= c.resume %></span>
+            <% if (c.trainsAller && c.trainsAller.length > 0) { %>
+            <ul>
+              <% c.trainsAller.forEach((train) => { %>
+              <li>🚆 <%= train.heureFormatee %> <%= train.destination %></li>
+              <% }) %>
+            </ul>
+            <% } %>
           </li>
           <% }) %>
         </ul>
