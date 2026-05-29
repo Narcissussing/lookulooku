@@ -5,6 +5,7 @@ import axios from "axios";
 const app = express();
 const port = 666;
 const OW_API_KEY = process.env.OPENWEATHER_API_KEY;
+const IDFM_API_KEY = process.env.IDFM_API_KEY; 
 const OW_URL = "https://api.openweathermap.org/data/2.5";
 const OM_URL = "https://api.open-meteo.com/v1/";
 
@@ -88,12 +89,45 @@ async function recupererMeteo(ville) {
   return data;
 }
 
+function evaluerCreneau(donnees) {
+  // Convertir l'heure du créneau en timestamp pour comparer
+  // (la chaîne est en heure locale Europe/Paris ; on la traite comme telle)
+  // L'heure du créneau est en heure locale Europe/Paris
+// (timezone du serveur de dev — à revoir si déploiement ailleurs)
+  const creneauMs = new Date(donnees.heure).getTime();
+  const sunriseMs = donnees.sunrise * 1000;
+  const sunsetMs = donnees.sunset * 1000;
+  const estJour = creneauMs >= sunriseMs && creneauMs <= sunsetMs;
+  // Les 3 verdicts booléens
+  const parapluie = donnees.precipitation > 0 || donnees.weather_code >= 51;
+  const lunettes = donnees.cloud_cover < 30 && estJour;
+  const couche = donnees.temperature < 15;
+  // Un score : 0 = parfait, plus c'est haut, plus c'est mauvais
+  let score = 0;
+  if (parapluie) score += 2;
+  if (couche) score += 1;
+  // (lunettes ne pénalise pas — c'est juste un rappel pratique)
+
+  // Le résumé textuel
+  let resume;
+  if (parapluie && couche) resume = "🌧️🥶 Évite — pluie et froid";
+  else if (parapluie) resume = "🌧️ Parapluie obligatoire";
+  else if (couche) resume = "🥶 Couvre-toi";
+  else if (lunettes) resume = "☀️ Lunettes !";
+  else resume = "✅ Tranquille";
+
+  return {
+    ...donnees, // garde les données brutes
+    verdicts: { parapluie, lunettes, couche },
+    resume,
+    score,
+  };
+}
+
 app.get("/", async (req, res) => {
   try {
     const meteos = await Promise.all(villes.map(recupererMeteo));
-
     const previsions = await Promise.all(villes.map(recupererPrevisions));
-
     const donneesMeteo = [];
 
     // On limite la recherche aux heures d'aujourd'hui pour éviter
@@ -118,6 +152,9 @@ app.get("/", async (req, res) => {
           precipitation: previsionVille.hourly.precipitation[index],
           cloud_cover: previsionVille.hourly.cloud_cover[index],
           weather_code: previsionVille.hourly.weather_code[index],
+          // Heures de lever/coucher du soleil pour la ville concernée
+          sunrise: meteos[heureRecherchee.villeIndex].sys.sunrise,
+          sunset: meteos[heureRecherchee.villeIndex].sys.sunset,
         });
       } else {
         console.warn(
@@ -125,17 +162,18 @@ app.get("/", async (req, res) => {
         );
       }
     }
-    console.log(donneesMeteo);
+    // On enrichit chaque créneau avec verdicts, score et résumé
+    const creneauxEvalues = donneesMeteo.map(evaluerCreneau);
     res.render("index.ejs", {
       meteos,
-      donneesMeteo,
+      creneaux: creneauxEvalues,
     });
   } catch (error) {
     console.error(error.message);
 
     res.render("index.ejs", {
       meteos: [],
-      donneesMeteo: [],
+      creneaux: [],
       erreur: error.message,
     });
   }
@@ -144,3 +182,5 @@ app.get("/", async (req, res) => {
 app.listen(port, () => {
   console.log(`Server running on port: ${port}`);
 });
+
+

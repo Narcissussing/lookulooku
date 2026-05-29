@@ -1,0 +1,442 @@
+/* ============================================================
+   LOOKULOOKU — Sport Edition
+   Tout est piloté par variables CSS — un seul endroit à modifier.
+   ============================================================ */
+
+/* ──────────────────────────────────────────
+   THÈME PAR DÉFAUT : DARK (cockpit nuit)
+   ────────────────────────────────────────── */
+
+:root,
+:root[data-theme="bureau"] {
+  /* Surfaces générales */
+  --bg: #0a0e14;
+  --surface: #141921;
+  --surface-2: #1c222c;
+  --border: #252b36;
+  --border-hover: #3a4150;
+
+  /* Textes */
+  --text: #f5f7fa;
+  --text-muted: #8a93a3;
+  --text-dim: #5a6373;
+
+  /* Accent principal */
+  --accent: #a3ff12;
+  --accent-glow: rgba(163, 255, 18, 0.15);
+
+  /* Couleurs de statut (verdicts) */
+  --status-tranquille: #22c55e;
+  --status-lunettes: #eab308;
+  --status-couche: #3b82f6;
+  --status-parapluie: #ef4444;
+
+  /* CARTE TRILPORT — violets, "maison" */
+  --trilport-bg-from: #1e1b3a;
+  --trilport-bg-to: #2d1b4e;
+  --trilport-accent: #a78bfa;
+  --trilport-accent-bright: #c4b5fd;
+  --trilport-label: #a78bfa;
+  --trilport-description: #c4b5fd;
+
+  /* CARTE MEAUX — cyan, "destination gym" */
+  --meaux-bg-from: #0c2a3a;
+  --meaux-bg-to: #0f3848;
+  --meaux-accent: #22d3ee;
+  --meaux-accent-bright: #67e8f9;
+  --meaux-label: #22d3ee;
+  --meaux-description: #67e8f9;
+
+  /* Typographie */
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  --font-display: "Outfit", system-ui, sans-serif;
+
+  /* Effets */
+  --radius: 8px;
+  --transition: 0.2s ease;
+  --shadow-hover: 0 12px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* ──────────────────────────────────────────
+   THÈME ALTERNATIF : LIGHT (sport diurne, saisonnier)
+   ────────────────────────────────────────── */
+
+:root[data-theme="cinema"] {
+  --bg: #f5f7fa;
+  --surface: #ffffff;
+  --surface-2: #f0f3f7;
+  --border: #d8dde5;
+  --border-hover: #a8b0bd;
+
+  --text: #0a0e14;
+  --text-muted: #5a6373;
+  --text-dim: #8a93a3;
+
+  --accent: #5cb800;
+  --accent-glow: rgba(92, 184, 0, 0.18);
+
+  --status-tranquille: #16a34a;
+  --status-lunettes: #ca8a04;
+  --status-couche: #2563eb;
+  --status-parapluie: #dc2626;
+
+  /* CARTE TRILPORT — vert frais, "maison" en mode jour */
+  --trilport-bg-from: #e8f5e9;
+  --trilport-bg-to: #c8e6c9;
+  --trilport-accent: #2e7d32;
+  --trilport-accent-bright: #66bb6a;
+  --trilport-label: #2e7d32;
+  --trilport-description: #2e7d32;
+
+  /* CARTE MEAUX — automne chaud, "destination gym" en mode jour */
+  --meaux-bg-from: #fff3e0;
+  --meaux-bg-to: #ffe0b2;
+  --meaux-accent: #e65100;
+  --meaux-accent-bright: #fb8c00;
+  --meaux-label: #e65100;
+  --meaux-description: #e65100;
+
+  --shadow-hover: 0 12px 32px rgba(0, 0, 0, 0.08);
+}
+
+/* ──────────────────────────────────────────
+   Base
+   ────────────────────────────────────────── */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.4;
+  padding: 1.5rem;
+  transition: background var(--transition), color var(--transition);
+}
+
+main,
+body > * {
+  max-width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+ul {
+  list-style: none;
+}
+
+/* ──────────────────────────────────────────
+   Header
+   ────────────────────────────────────────── */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1.5rem;
+}
+
+h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.5rem;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+h1 span {
+  color: var(--accent);
+}
+
+.theme-toggle {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  width: 40px;
+  height: 40px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+}
+
+.theme-toggle:hover {
+  border-color: var(--accent);
+  background: var(--surface-2);
+}
+
+/* ──────────────────────────────────────────
+   Section villes
+   ────────────────────────────────────────── */
+
+.villes {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Style commun aux deux cartes */
+.carte {
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+  transition: transform var(--transition), box-shadow var(--transition);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.carte:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+/* Barre d'accent en haut de chaque carte */
+.carte::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+}
+
+/* Petit label "VILLE" en haut */
+.carte::before {
+  content: "VILLE";
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  margin-bottom: 0.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Trilport (carte principale) ── */
+.carte-principale {
+  background: linear-gradient(
+    135deg,
+    var(--trilport-bg-from) 0%,
+    var(--trilport-bg-to) 100%
+  );
+}
+
+.carte-principale::after {
+  background: linear-gradient(
+    90deg,
+    var(--trilport-accent),
+    var(--trilport-accent-bright)
+  );
+}
+
+.carte-principale::before {
+  color: var(--trilport-label);
+}
+
+.carte-principale .description {
+  color: var(--trilport-description);
+}
+
+/* ── Meaux (carte secondaire) ── */
+.carte-secondaire {
+  background: linear-gradient(
+    135deg,
+    var(--meaux-bg-from) 0%,
+    var(--meaux-bg-to) 100%
+  );
+}
+
+.carte-secondaire::after {
+  background: linear-gradient(
+    90deg,
+    var(--meaux-accent),
+    var(--meaux-accent-bright)
+  );
+}
+
+.carte-secondaire::before {
+  color: var(--meaux-label);
+}
+
+.carte-secondaire .description {
+  color: var(--meaux-description);
+}
+
+/* Typographie commune aux cartes */
+.carte h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--text);
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  position: relative;
+  z-index: 1;
+}
+
+.carte-principale .temp {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 4rem;
+  line-height: 1;
+  color: var(--text);
+  letter-spacing: -0.04em;
+  margin-bottom: 0.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.carte-principale .description,
+.carte-secondaire .description {
+  font-size: 0.9rem;
+  text-transform: lowercase;
+  position: relative;
+  z-index: 1;
+}
+
+.carte-principale .ressenti {
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  margin-top: 0.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.carte-secondaire .temp {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 2.5rem;
+  line-height: 1;
+  color: var(--text);
+  letter-spacing: -0.03em;
+  margin-bottom: 0.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* ──────────────────────────────────────────
+   Section gym
+   ────────────────────────────────────────── */
+
+.gym {
+  padding-top: 0.5rem;
+}
+
+.gym > h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text);
+  margin-bottom: 1rem;
+  padding-left: 0.75rem;
+  border-left: 3px solid var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Colonnes Aller / Retour */
+.colonnes-creneaux {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.colonnes-creneaux > div {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+}
+
+.colonnes-creneaux h3 {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.creneau {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  font-size: 0.9rem;
+  border-bottom: 1px solid var(--border);
+  transition: padding-left var(--transition);
+}
+
+.creneau:last-child {
+  border-bottom: none;
+}
+
+.creneau:hover {
+  padding-left: 0.5rem;
+}
+
+.creneau .heure {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text);
+  min-width: 55px;
+}
+
+.creneau .resume {
+  color: var(--text-muted);
+  flex: 1;
+  font-size: 0.9rem;
+}
+
+/* ──────────────────────────────────────────
+   Erreur
+   ────────────────────────────────────────── */
+
+.erreur {
+  background: var(--surface);
+  color: var(--status-parapluie);
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius);
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  border: 1px solid var(--status-parapluie);
+  margin-top: 1rem;
+}
+
+/* ──────────────────────────────────────────
+   Responsive
+   ────────────────────────────────────────── */
+
+@media (max-width: 700px) {
+  .villes,
+  .colonnes-creneaux {
+    grid-template-columns: 1fr;
+  }
+  .carte-principale .temp {
+    font-size: 3rem;
+  }
+}

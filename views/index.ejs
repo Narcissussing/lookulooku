@@ -1,31 +1,94 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" data-theme="bureau">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LookuLooku</title>
+
+  <%# Polices Google : serif pour Bureau, sans pour Cinéma %>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Outfit:wght@400;600&family=Playfair+Display:wght@400;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="/styles/main.css">
 </head>
+
 <body>
-  <h1>How va ooo !</h1>
+
+  <%# Bouton de bascule de thème %>
+<header class="header">
+  <h1>looku<span>•</span>looku</h1>
+  <button class="theme-toggle" aria-label="Changer de thème">🌙</button>
+</header>
 
   <% if (locals.erreur) { %>
-    <%# Cas d'erreur : on prévient l'utilisateur %>
-    <p class="erreur">Oups : <%= erreur %></p>
-  <% } else if (meteos && meteos.length > 0) { %>
-    <%# Cas normal : on affiche les cartes météo %>
-    <% meteos.forEach((meteo) => { %>
-      <section class="carte">
-        <h2>Météo à <%= meteo.name %></h2>
-        <p>Température : <%= meteo.main.temp.toFixed(2) %>°C</p>
-        <p>Ressenti : <%= meteo.main.feels_like.toFixed(2) %>°C</p>
-        <p>Conditions : <%= meteo.weather[0].description %></p>
-        <p>Nuages : <%= meteo.clouds.all %>%</p>
-        <p>Heure : <%= new Date(meteo.dt * 1000).toLocaleTimeString("fr-FR") %></p>
-      </section>
-    <% }) %>
+  <%# Cas d'erreur %>
+  <p class="erreur">Oups : <%= erreur %></p>
+
   <% } else { %>
-    <%# Cas où on n'a pas de données mais pas d'erreur explicite non plus %>
-    <p>Aucune donnée météo disponible.</p>
+
+  <%# === Cartes météo : Trilport grande, Meaux petite === %>
+  <% if (meteos && meteos.length === 2) { %>
+  <section class="villes">
+
+    <%# Carte principale : Trilport %>
+    <article class="carte carte-principale">
+      <h2><%= meteos[0].name %></h2>
+      <p class="temp"><%= meteos[0].main.temp.toFixed(1) %>°C</p>
+      <p class="description"><%= meteos[0].weather[0].description %></p>
+      <p class="ressenti">Ressenti <%= meteos[0].main.feels_like.toFixed(1) %>°C</p>
+    </article>
+
+    <%# Carte secondaire : Meaux %>
+    <article class="carte carte-secondaire">
+      <h2><%= meteos[1].name %></h2>
+      <p class="temp"><%= meteos[1].main.temp.toFixed(0) %>°</p>
+      <p class="description"><%= meteos[1].weather[0].description %></p>
+    </article>
+
+  </section>
   <% } %>
+
+  <%# === Section gym === %>
+  <% if (creneaux && creneaux.length > 0) { %>
+  <section class="gym">
+    <h2>🏋️ Gym ce soir ?</h2>
+
+    <div class="colonnes-creneaux">
+
+      <div>
+        <h3>Aller (Trilport → Meaux)</h3>
+        <ul class="creneaux-liste">
+          <% creneaux.filter((c) => c.direction === "aller").forEach((c) => { %>
+          <li class="creneau">
+            <span class="heure"><%= c.realHeure %></span>
+            <span class="resume"><%= c.resume %></span>
+          </li>
+          <% }) %>
+        </ul>
+      </div>
+
+      <div>
+        <h3>Retour (Meaux → Trilport)</h3>
+        <ul class="creneaux-liste">
+          <% creneaux.filter((c) => c.direction === "retour").forEach((c) => { %>
+          <li class="creneau">
+            <span class="heure"><%= c.realHeure %></span>
+            <span class="resume"><%= c.resume %></span>
+          </li>
+          <% }) %>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+  <% } %>
+
+  <% } %>
+
+  <%# Script de bascule de thème %>
+  <script src="/scripts/theme.js"></script>
 </body>
+
 </html>
