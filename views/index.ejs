@@ -34,10 +34,41 @@
 
     <%# Carte principale : Trilport %>
     <article class="carte carte-principale">
-      <h2><%= meteos[0].name %></h2>
-      <p class="temp"><%= meteos[0].main.temp.toFixed(1) %>°C</p>
-      <p class="description"><%= meteos[0].weather[0].description %></p>
-      <p class="ressenti">Ressenti <%= meteos[0].main.feels_like.toFixed(1) %>°C</p>
+      <div class="carte-contenu">
+
+        <div class="meteo-info">
+          <h2><%= meteos[0].name %></h2>
+          <p class="temp"><%= meteos[0].main.temp.toFixed(1) %>°C</p>
+          <p class="description"><%= meteos[0].weather[0].description %></p>
+          <p class="ressenti">Ressenti <%= meteos[0].main.feels_like.toFixed(1) %>°C</p>
+        </div>
+
+        <div class="trains-panneau">
+
+          <div class="trains-gare departs">
+            <h3>Départs</h3>
+            <% departsTrilportDepart.forEach((train, i) => { %>
+            <div class="train-ligne <%= i === 0 ? 'principal' : 'secondaire' %>">
+              <span class="train-heure"><%= train.heureFormatee %></span>
+              <span class="train-dest"><%= train.destination %></span>
+              <span class="train-countdown"><%= train.dansXMin %> min</span>
+            </div>
+            <% }) %>
+          </div>
+
+          <div class="trains-gare arrivees">
+            <h3>Arrivées</h3>
+            <% arrivesTrilport.forEach((train, i) => { %>
+            <div class="train-ligne <%= i === 0 ? 'principal' : 'secondaire' %>">
+              <span class="train-heure"><%= train.heureFormatee %></span>
+              <span class="train-dest"><%= train.destination %></span>
+              <span class="train-countdown"><%= train.dansXMin %> min</span>
+            </div>
+            <% }) %>
+          </div>
+
+        </div>
+      </div>
     </article>
 
     <%# Carte secondaire : Meaux %>
@@ -67,7 +98,11 @@
             <% if (c.trainsAller && c.trainsAller.length > 0) { %>
             <ul>
               <% c.trainsAller.forEach((train) => { %>
-              <li>🚆 <%= train.heureFormatee %> <%= train.destination %></li>
+              <li class="train-creneau">
+                <span class="train-creneau-heure"><%= train.heureFormatee %></span>
+                <span class="train-creneau-dest"><%= train.destination %></span>
+                <span class="train-creneau-countdown"><%= train.dansXMin %> min</span>
+              </li>
               <% }) %>
             </ul>
             <% } %>
@@ -87,9 +122,10 @@
             <% if (c.direction === "retour" && c.trains) { %>
             <ul>
               <% c.trains.forEach((train) => { %>
-              <li>
-                🚆 <%= train.heureFormatee %>
-                <%= train.destination %>
+              <li class="train-creneau">
+                <span class="train-creneau-heure"><%= train.heureFormatee %></span>
+                <span class="train-creneau-dest"><%= train.destination %></span>
+                <span class="train-creneau-countdown"><%= train.dansXMin %> min</span>
               </li>
               <% }) %>
             </ul>

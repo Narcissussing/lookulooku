@@ -145,6 +145,25 @@ app.get("/", async (req, res) => {
     const departsMeaux = extraireDeparts(passagesMeaux);
     const departsTrilport = extraireDeparts(passagesTrilport);
 
+    // Départs Trilport → Meaux / Paris
+    const departsTrilportDepart = departsTrilport
+      .filter(
+        (train) =>
+          train.destination === "Meaux" || train.destination === "Paris Est",
+      )
+      .sort((a, b) => new Date(a.heure) - new Date(b.heure))
+      .slice(0, 2);
+
+    // Arrivées à Trilport depuis l'autre sens
+    const arrivesTrilport = departsTrilport
+      .filter(
+        (train) =>
+          train.destination === "Château-Thierry" ||
+          train.destination === "La Ferté-Milon",
+      )
+      .sort((a, b) => new Date(a.heure) - new Date(b.heure))
+      .slice(0, 2);
+
     const meteos = await Promise.all(villes.map(recupererMeteo));
     const previsions = await Promise.all(villes.map(recupererPrevisions));
     const donneesMeteo = [];
@@ -218,11 +237,13 @@ app.get("/", async (req, res) => {
         ).slice(0, 2);
       }
     }
-
     res.render("index.ejs", {
       meteos,
       creneaux: creneauxEvalues,
       departsRetour,
+
+      departsTrilportDepart,
+      arrivesTrilport,
     });
   } catch (error) {
     console.error(error.message);
@@ -258,8 +279,10 @@ function extraireDeparts(data) {
       visite.MonitoredVehicleJourney.MonitoredCall.ExpectedArrivalTime;
     return {
       destination: visite.MonitoredVehicleJourney.DestinationName?.[0]?.value,
+      direction: visite.MonitoredVehicleJourney.DirectionRef?.value,
       heure,
       heureFormatee: formaterHeure(heure),
+      dansXMin: minutesAvantDepart(heure), // ← ajouter ici
     };
   });
 }
@@ -285,6 +308,12 @@ function trouverTrainsPourCreneau(trains, realHeure) {
 
   // new Date() compare toujours en millisecondes UTC — pas besoin de correction manuelle
   return trains.filter((train) => new Date(train.heure) >= seuil);
+}
+// Calculer le nombre de minutes avant le départ
+function minutesAvantDepart(iso) {
+  const maintenant = new Date();
+  const depart = new Date(iso);
+  return Math.round((depart - maintenant) / 60000);
 }
 
 app.listen(port, () => {

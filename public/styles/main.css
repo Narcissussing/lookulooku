@@ -428,6 +428,135 @@ h1 span {
 }
 
 /* ──────────────────────────────────────────
+   Trains dans la carte Trilport
+   ────────────────────────────────────────── */
+
+.carte-principale .carte-contenu {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.5rem;
+  height: 100%;
+}
+
+.carte-principale .meteo-info {
+  flex: 1;
+}
+
+.carte-principale .trains-panneau {
+  display: flex;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.trains-gare {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+  min-width: 120px;
+}
+
+.trains-gare h3 {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin-bottom: 0.35rem;
+}
+
+.trains-gare.departs h3 { color: #4ade80; }
+.trains-gare.arrivees h3 { color: #f87171; }
+
+.train-ligne {
+  font-family: var(--font-mono);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding: 0.3rem 0.5rem;
+  border-radius: 6px;
+  cursor: default;
+  transition: transform 0.2s ease, background 0.2s ease;
+  width: 100%;
+}
+
+.train-ligne .train-heure {
+  font-weight: 700;
+  line-height: 1;
+}
+
+.train-ligne .train-dest {
+  font-size: 0.65rem;
+  opacity: 0.7;
+  margin-top: 0.15rem;
+}
+
+/* Premier train — grand */
+.train-ligne.principal .train-heure { font-size: 1.4rem; }
+.train-ligne.principal .train-dest { font-size: 0.7rem; }
+
+.trains-gare.departs .train-ligne.principal .train-heure { color: #4ade80; }
+.trains-gare.departs .train-ligne.principal .train-dest  { color: #86efac; }
+.trains-gare.arrivees .train-ligne.principal .train-heure { color: #f87171; }
+.trains-gare.arrivees .train-ligne.principal .train-dest  { color: #fca5a5; }
+
+/* Deuxième train — petit */
+.train-ligne.secondaire .train-heure {
+  font-size: 0.8rem;
+  opacity: 0.5;
+}
+
+/* Hover sur le premier */
+.train-ligne.principal:hover {
+  transform: translateX(-4px);
+  background: rgba(255, 255, 255, 0.06);
+}
+/* ──────────────────────────────────────────
+   Trains dans les créneaux gym
+   ────────────────────────────────────────── */
+
+.train-creneau {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  padding: 0.1rem 0;
+  list-style: none;
+}
+
+.train-creneau-heure {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+.train-creneau-dest {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  flex: 1;
+}
+
+.train-creneau-countdown {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+.train-ligne.principal .train-countdown {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  opacity: 0.6;
+  margin-top: 0.1rem;
+}
+
+.train-ligne.secondaire .train-countdown {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  opacity: 0.4;
+}
+
+/* ──────────────────────────────────────────
    Responsive
    ────────────────────────────────────────── */
 

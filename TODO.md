@@ -1,7 +1,6 @@
 # TODO — Idées pour v2
 
    - [ ] Météo de demain (toggle ou onglets)
-   - [ ] Données IDFM Ligne P — prochains passages Trilport et Meaux
    - [ ] Infos trafic Ligne P (perturbations)
    - [ ] Carte météo 16ème (commute de ma copine)
    - [ ] Bouton gym caché les dimanches (avec override possible)
