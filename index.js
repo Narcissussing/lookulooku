@@ -4,10 +4,13 @@ import axios from "axios";
 
 const app = express();
 const port = 666;
+
 const OW_API_KEY = process.env.OPENWEATHER_API_KEY;
-const IDFM_API_KEY = process.env.IDFM_API_KEY; 
+const IDFM_API_KEY = process.env.IDFM_API_KEY;
+
 const OW_URL = "https://api.openweathermap.org/data/2.5";
 const OM_URL = "https://api.open-meteo.com/v1/";
+const IDFM_URL = "https://prim.iledefrance-mobilites.fr/marketplace";
 
 const villes = [
   {
@@ -47,6 +50,12 @@ const heuresRecherchees = [
 
   // Retour — départ Meaux, on regarde la météo à Meaux
   {
+    realHeure: "20h05",
+    forecastHeure: "T20:00",
+    villeIndex: 1,
+    direction: "retour",
+  },
+  {
     realHeure: "20h30",
     forecastHeure: "T21:00",
     villeIndex: 1,
@@ -85,7 +94,6 @@ async function recupererMeteo(ville) {
       lang: "fr",
     },
   });
-
   return data;
 }
 
@@ -93,7 +101,7 @@ function evaluerCreneau(donnees) {
   // Convertir l'heure du créneau en timestamp pour comparer
   // (la chaîne est en heure locale Europe/Paris ; on la traite comme telle)
   // L'heure du créneau est en heure locale Europe/Paris
-// (timezone du serveur de dev — à revoir si déploiement ailleurs)
+  // (timezone du serveur de dev — à revoir si déploiement ailleurs)
   const creneauMs = new Date(donnees.heure).getTime();
   const sunriseMs = donnees.sunrise * 1000;
   const sunsetMs = donnees.sunset * 1000;
@@ -126,9 +134,20 @@ function evaluerCreneau(donnees) {
 
 app.get("/", async (req, res) => {
   try {
+    const passagesBruts = await recupererProchainsPassages();
+    const departs = extraireDeparts(passagesBruts);
+
     const meteos = await Promise.all(villes.map(recupererMeteo));
     const previsions = await Promise.all(villes.map(recupererPrevisions));
     const donneesMeteo = [];
+
+    const departsRetour = departs
+      .filter(
+        (train) =>
+          train.destination === "Château-Thierry" ||
+          train.destination === "La Ferté-Milon",
+      )
+      .sort((a, b) => new Date(a.heure) - new Date(b.heure));
 
     // On limite la recherche aux heures d'aujourd'hui pour éviter
     // de récupérer les mêmes heures d'un autre jour de la semaine
@@ -162,11 +181,24 @@ app.get("/", async (req, res) => {
         );
       }
     }
+
     // On enrichit chaque créneau avec verdicts, score et résumé
     const creneauxEvalues = donneesMeteo.map(evaluerCreneau);
+    // Associer les trains aux créneaux retour
+    for (const creneau of creneauxEvalues) {
+      if (creneau.direction === "retour") {
+        const heureGym = creneau.realHeure.replace("h", ":");
+
+        creneau.trains = trouverTrainsPourCreneau(
+          departsRetour,
+          heureGym,
+        ).slice(0, 2);
+      }
+    }
     res.render("index.ejs", {
       meteos,
       creneaux: creneauxEvalues,
+      departsRetour,
     });
   } catch (error) {
     console.error(error.message);
@@ -179,8 +211,48 @@ app.get("/", async (req, res) => {
   }
 });
 
+// Récupérer les prochains passages pour une zone d'arrêt
+async function recupererProchainsPassages() {
+  const { data } = await axios.get(`${IDFM_URL}/stop-monitoring`, {
+    headers: {
+      apikey: IDFM_API_KEY,
+    },
+    params: {
+      MonitoringRef: "STIF:StopArea:SP:43161:",
+    },
+  });
+  return data;
+}
+
+function extraireDeparts(data) {
+  // On transforme la réponse PRIM en format simple
+  return data.Siri.ServiceDelivery.StopMonitoringDelivery.flatMap(
+    (delivery) => delivery.MonitoredStopVisit,
+  ).map((visite) => {
+    const heure =
+      visite.MonitoredVehicleJourney.MonitoredCall.ExpectedDepartureTime ??
+      visite.MonitoredVehicleJourney.MonitoredCall.ExpectedArrivalTime;
+    return {
+      destination: visite.MonitoredVehicleJourney.DestinationName?.[0]?.value,
+      heure,
+      heureFormatee: formaterHeure(heure),
+    };
+  });
+}
+
+function formaterHeure(iso) {
+  return new Date(iso).toLocaleTimeString("fr-FR", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+// Trouver les trains disponibles après un créneau gym
+function trouverTrainsPourCreneau(trains, heureGym) {
+  return trains.filter((train) => {
+    return train.heureFormatee >= heureGym;
+  });
+}
+
 app.listen(port, () => {
   console.log(`Server running on port: ${port}`);
 });
-
-

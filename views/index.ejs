@@ -17,10 +17,10 @@
 <body>
 
   <%# Bouton de bascule de thème %>
-<header class="header">
-  <h1>looku<span>•</span>looku</h1>
-  <button class="theme-toggle" aria-label="Changer de thème">🌙</button>
-</header>
+  <header class="header">
+    <h1>looku<span>•</span>looku</h1>
+    <button class="theme-toggle" aria-label="Changer de thème">🌙</button>
+  </header>
 
   <% if (locals.erreur) { %>
   <%# Cas d'erreur %>
@@ -76,6 +76,17 @@
           <li class="creneau">
             <span class="heure"><%= c.realHeure %></span>
             <span class="resume"><%= c.resume %></span>
+
+            <% if (c.direction === "retour" && c.trains) { %>
+            <ul>
+              <% c.trains.forEach((train) => { %>
+              <li>
+                🚆 <%= train.heureFormatee %>
+                <%= train.destination %>
+              </li>
+              <% }) %>
+            </ul>
+            <% } %>
           </li>
           <% }) %>
         </ul>
