@@ -34,6 +34,9 @@
 
     <%# Carte principale : Trilport %>
     <article class="carte carte-principale">
+      <% if (messages && messages.length > 0) { %>
+  <span class="carte-alerte">⚠️</span>
+<% } %>
       <div class="carte-contenu">
 
         <div class="meteo-info">
@@ -140,9 +143,23 @@
   <% } %>
 
   <% } %>
+  
+  <%# Bandeau trafic — fixé en bas de page %>
+<div class="bandeau-trafic <%= messages && messages.length > 0 ? 'perturbe' : 'fluide' %>">
+  <% if (messages && messages.length > 0) { %>
+    <span class="bandeau-icone">⚠️</span>
+    <span class="bandeau-texte"><%= messages[0].texte %></span>
+  <% } else { %>
+    <span class="bandeau-icone">🟢</span>
+    <span class="bandeau-texte">Trafic fluide — Ligne P</span>
+  <% } %>
+</div>
 
   <%# Script de bascule de thème %>
   <script src="/scripts/theme.js"></script>
+
+  <%# Script de rafraîchissement %>
+  <script src="/scripts/refresh.js"></script>
 </body>
 
 </html>

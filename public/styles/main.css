@@ -118,7 +118,10 @@ body {
   font-size: 15px;
   line-height: 1.4;
   padding: 1.5rem;
-  transition: background var(--transition), color var(--transition);
+  padding-bottom: 3rem; /* pour laisser de la place au bandeau trafic fixé en bas */
+  transition:
+    background var(--transition),
+    color var(--transition);
 }
 
 main,
@@ -192,7 +195,9 @@ h1 span {
 .carte {
   border-radius: var(--radius);
   padding: 1.25rem 1.5rem;
-  transition: transform var(--transition), box-shadow var(--transition);
+  transition:
+    transform var(--transition),
+    box-shadow var(--transition);
   position: relative;
   overflow: hidden;
   border: 1px solid var(--border);
@@ -466,8 +471,12 @@ h1 span {
   margin-bottom: 0.35rem;
 }
 
-.trains-gare.departs h3 { color: #4ade80; }
-.trains-gare.arrivees h3 { color: #f87171; }
+.trains-gare.departs h3 {
+  color: #4ade80;
+}
+.trains-gare.arrivees h3 {
+  color: #f87171;
+}
 
 .train-ligne {
   font-family: var(--font-mono);
@@ -477,7 +486,9 @@ h1 span {
   padding: 0.3rem 0.5rem;
   border-radius: 6px;
   cursor: default;
-  transition: transform 0.2s ease, background 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
   width: 100%;
 }
 
@@ -493,13 +504,25 @@ h1 span {
 }
 
 /* Premier train — grand */
-.train-ligne.principal .train-heure { font-size: 1.4rem; }
-.train-ligne.principal .train-dest { font-size: 0.7rem; }
+.train-ligne.principal .train-heure {
+  font-size: 1.4rem;
+}
+.train-ligne.principal .train-dest {
+  font-size: 0.7rem;
+}
 
-.trains-gare.departs .train-ligne.principal .train-heure { color: #4ade80; }
-.trains-gare.departs .train-ligne.principal .train-dest  { color: #86efac; }
-.trains-gare.arrivees .train-ligne.principal .train-heure { color: #f87171; }
-.trains-gare.arrivees .train-ligne.principal .train-dest  { color: #fca5a5; }
+.trains-gare.departs .train-ligne.principal .train-heure {
+  color: #4ade80;
+}
+.trains-gare.departs .train-ligne.principal .train-dest {
+  color: #86efac;
+}
+.trains-gare.arrivees .train-ligne.principal .train-heure {
+  color: #f87171;
+}
+.trains-gare.arrivees .train-ligne.principal .train-dest {
+  color: #fca5a5;
+}
 
 /* Deuxième train — petit */
 .train-ligne.secondaire .train-heure {
@@ -556,6 +579,60 @@ h1 span {
   opacity: 0.4;
 }
 
+/* ──────────────────────────────────────────
+   Bandeau trafic — fixé en bas de page
+   ────────────────────────────────────────── */
+
+.bandeau-trafic {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  z-index: 100;
+}
+
+.bandeau-trafic.fluide {
+  background: rgba(34, 197, 94, 0.12);
+  border-top: 1px solid rgba(34, 197, 94, 0.3);
+  color: #4ade80;
+}
+
+.bandeau-trafic.perturbe {
+  background: rgba(239, 68, 68, 0.15);
+  border-top: 1px solid rgba(239, 68, 68, 0.4);
+  color: #f87171;
+}
+
+/* Clignotement de l'icône en cas de perturbation */
+@keyframes clignoter {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+.bandeau-trafic.perturbe .bandeau-icone {
+  animation: clignoter 1s ease-in-out infinite;
+}
+
+/* Icône d'alerte dans la carte Trilport */
+.carte-alerte {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  font-size: 1.1rem;
+  animation: clignoter 1s ease-in-out infinite;
+  z-index: 1;
+}
 /* ──────────────────────────────────────────
    Responsive
    ────────────────────────────────────────── */

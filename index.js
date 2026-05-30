@@ -97,6 +97,19 @@ async function recupererMeteo(ville) {
   return data;
 }
 
+// Récupérer les infos trafic pour la Ligne P
+async function recupererInfosTrafic() {
+  const { data } = await axios.get(`${IDFM_URL}/general-message`, {
+    headers: {
+      apikey: IDFM_API_KEY,
+    },
+    params: {
+      LineRef: "STIF:Line::C01730:",
+    },
+  });
+  return data;
+}
+
 function evaluerCreneau(donnees) {
   // Convertir l'heure du créneau en timestamp pour comparer
   // (la chaîne est en heure locale Europe/Paris ; on la traite comme telle)
@@ -146,6 +159,7 @@ app.get("/", async (req, res) => {
     const departsTrilport = extraireDeparts(passagesTrilport);
 
     // Départs Trilport → Meaux / Paris
+    const donneesMeteo = [];
     const departsTrilportDepart = departsTrilport
       .filter(
         (train) =>
@@ -166,7 +180,10 @@ app.get("/", async (req, res) => {
 
     const meteos = await Promise.all(villes.map(recupererMeteo));
     const previsions = await Promise.all(villes.map(recupererPrevisions));
-    const donneesMeteo = [];
+
+    const infosTrafic = await recupererInfosTrafic();
+    const messages = extraireMessages(infosTrafic);
+    console.log("Messages de trafic :", messages);
 
     // Départs utiles depuis Meaux
     const departsRetour = departsMeaux
@@ -244,6 +261,7 @@ app.get("/", async (req, res) => {
 
       departsTrilportDepart,
       arrivesTrilport,
+      messages,
     });
   } catch (error) {
     console.error(error.message);
@@ -315,6 +333,23 @@ function minutesAvantDepart(iso) {
   const depart = new Date(iso);
   return Math.round((depart - maintenant) / 60000);
 }
+
+// Transformer les données de trafic en tableau de messages à afficher
+function extraireMessages(data) {
+  const messages = data.Siri.ServiceDelivery.GeneralMessageDelivery.flatMap(
+    (delivery) => delivery.InfoMessage,
+  );
+  return messages.map((msg) => {
+    const texte = msg.Content.Message.find((m) => m.MessageType === "SHORT_MESSAGE")
+      ?.MessageText.value;
+    return {
+      texte,
+      canal: msg.InfoChannelRef.value,
+      valideJusqua: msg.ValidUntilTime
+    };
+  });
+}
+
 
 app.listen(port, () => {
   console.log(`Server running on port: ${port}`);
