@@ -35,8 +35,8 @@
     <%# Carte principale : Trilport %>
     <article class="carte carte-principale">
       <% if (messages && messages.length > 0) { %>
-  <span class="carte-alerte">⚠️</span>
-<% } %>
+      <span class="carte-alerte">⚠️</span>
+      <% } %>
       <div class="carte-contenu">
 
         <div class="meteo-info">
@@ -53,7 +53,8 @@
             <% departsTrilportDepart.forEach((train, i) => { %>
             <div class="train-ligne <%= i === 0 ? 'principal' : 'secondaire' %>">
               <span class="train-heure"><%= train.heureFormatee %></span>
-              <span class="train-dest"><%= train.destination %></span>
+              <span class="dest-long"><%= train.destination %></span>
+              <span class="dest-court"><%= train.destinationCourte %></span>
               <span class="train-countdown"><%= train.dansXMin %> min</span>
             </div>
             <% }) %>
@@ -64,7 +65,8 @@
             <% arrivesTrilport.forEach((train, i) => { %>
             <div class="train-ligne <%= i === 0 ? 'principal' : 'secondaire' %>">
               <span class="train-heure"><%= train.heureFormatee %></span>
-              <span class="train-dest"><%= train.destination %></span>
+              <span class="dest-long"><%= train.destination %></span>
+              <span class="dest-court"><%= train.destinationCourte %></span>
               <span class="train-countdown"><%= train.dansXMin %> min</span>
             </div>
             <% }) %>
@@ -103,8 +105,8 @@
               <% c.trainsAller.forEach((train) => { %>
               <li class="train-creneau">
                 <span class="train-creneau-heure"><%= train.heureFormatee %></span>
-                <span class="train-creneau-dest"><%= train.destination %></span>
-                <span class="train-creneau-countdown"><%= train.dansXMin %> min</span>
+                <span class="dest-long"><%= train.destination %></span>
+                <span class="dest-court"><%= train.destinationCourte %></span> <span class="train-creneau-countdown"><%= train.dansXMin %> min</span>
               </li>
               <% }) %>
             </ul>
@@ -127,8 +129,8 @@
               <% c.trains.forEach((train) => { %>
               <li class="train-creneau">
                 <span class="train-creneau-heure"><%= train.heureFormatee %></span>
-                <span class="train-creneau-dest"><%= train.destination %></span>
-                <span class="train-creneau-countdown"><%= train.dansXMin %> min</span>
+                <span class="dest-long"><%= train.destination %></span>
+                <span class="dest-court"><%= train.destinationCourte %></span> <span class="train-creneau-countdown"><%= train.dansXMin %> min</span>
               </li>
               <% }) %>
             </ul>
@@ -143,17 +145,17 @@
   <% } %>
 
   <% } %>
-  
+
   <%# Bandeau trafic — fixé en bas de page %>
-<div class="bandeau-trafic <%= messages && messages.length > 0 ? 'perturbe' : 'fluide' %>">
-  <% if (messages && messages.length > 0) { %>
+  <div class="bandeau-trafic <%= messages && messages.length > 0 ? 'perturbe' : 'fluide' %>">
+    <% if (messages && messages.length > 0) { %>
     <span class="bandeau-icone">⚠️</span>
     <span class="bandeau-texte"><%= messages[0].texte %></span>
-  <% } else { %>
+    <% } else { %>
     <span class="bandeau-icone">🟢</span>
     <span class="bandeau-texte">Trafic fluide — Ligne P</span>
-  <% } %>
-</div>
+    <% } %>
+  </div>
 
   <%# Script de bascule de thème %>
   <script src="/scripts/theme.js"></script>

@@ -118,7 +118,6 @@ body {
   font-size: 15px;
   line-height: 1.4;
   padding: 1.5rem;
-  padding-bottom: 3rem; /* pour laisser de la place au bandeau trafic fixé en bas */
   transition:
     background var(--transition),
     color var(--transition);
@@ -497,7 +496,8 @@ h1 span {
   line-height: 1;
 }
 
-.train-ligne .train-dest {
+.train-ligne .dest-long,
+.train-ligne .dest-court {
   font-size: 0.65rem;
   opacity: 0.7;
   margin-top: 0.15rem;
@@ -507,21 +507,27 @@ h1 span {
 .train-ligne.principal .train-heure {
   font-size: 1.4rem;
 }
-.train-ligne.principal .train-dest {
+.train-ligne.principal .dest-long, .dest-court {
   font-size: 0.7rem;
 }
 
 .trains-gare.departs .train-ligne.principal .train-heure {
   color: #4ade80;
 }
-.trains-gare.departs .train-ligne.principal .train-dest {
+.trains-gare.departs .train-ligne.principal .dest-long, .dest-court {
   color: #86efac;
 }
 .trains-gare.arrivees .train-ligne.principal .train-heure {
   color: #f87171;
 }
-.trains-gare.arrivees .train-ligne.principal .train-dest {
+.trains-gare.arrivees .train-ligne.principal .dest-long, .dest-court {
   color: #fca5a5;
+}
+.dest-court { display: none; }
+
+@media (max-width: 700px) {
+  .dest-long { display: none; }
+  .dest-court { display: inline; }
 }
 
 /* Deuxième train — petit */
@@ -642,7 +648,45 @@ h1 span {
   .colonnes-creneaux {
     grid-template-columns: 1fr;
   }
+
   .carte-principale .temp {
     font-size: 3rem;
   }
+
+  /* Carte Trilport — trains en dessous de la météo */
+  .carte-principale .carte-contenu {
+    flex-direction: column;
+  }
+
+  .carte-principale .trains-panneau {
+    width: 100%;
+    justify-content: space-between;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 0.75rem;
+    margin-top: 0.75rem;
+  }
+
+  .trains-gare {
+    align-items: flex-start;
+  }
+
+  /* Créneaux gym — empiler heure/résumé/trains */
+  .creneau {
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .train-creneau {
+    font-size: 0.75rem;
+  }
+
+  /* Bandeau — plus compact */
+  .bandeau-trafic {
+    font-size: 0.7rem;
+    padding: 0.5rem 1rem;
+    position: static;
+    margin-top: 1rem;
+  }
+  .dest-long { display: none; }
+  .dest-court { display: inline; }
 }

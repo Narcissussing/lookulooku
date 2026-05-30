@@ -297,6 +297,7 @@ function extraireDeparts(data) {
       visite.MonitoredVehicleJourney.MonitoredCall.ExpectedArrivalTime;
     return {
       destination: visite.MonitoredVehicleJourney.DestinationName?.[0]?.value,
+        destinationCourte: raccourcirDestination(visite.MonitoredVehicleJourney.DestinationName?.[0]?.value),
       direction: visite.MonitoredVehicleJourney.DirectionRef?.value,
       heure,
       heureFormatee: formaterHeure(heure),
@@ -350,6 +351,15 @@ function extraireMessages(data) {
   });
 }
 
+function raccourcirDestination(dest) {
+  const raccourcis = {
+    "Château-Thierry": "Ch.-Thierry",
+    "La Ferté-Milon": "La Ferté",
+    "Paris Est": "Paris Est",
+    "Meaux": "Meaux",
+  };
+  return raccourcis[dest] ?? dest;
+}
 
 app.listen(port, () => {
   console.log(`Server running on port: ${port}`);
