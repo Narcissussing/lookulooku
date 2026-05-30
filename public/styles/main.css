@@ -507,27 +507,36 @@ h1 span {
 .train-ligne.principal .train-heure {
   font-size: 1.4rem;
 }
-.train-ligne.principal .dest-long, .dest-court {
+.train-ligne.principal .dest-long,
+.dest-court {
   font-size: 0.7rem;
 }
 
 .trains-gare.departs .train-ligne.principal .train-heure {
   color: #4ade80;
 }
-.trains-gare.departs .train-ligne.principal .dest-long, .dest-court {
+.trains-gare.departs .train-ligne.principal .dest-long,
+.dest-court {
   color: #86efac;
 }
 .trains-gare.arrivees .train-ligne.principal .train-heure {
   color: #f87171;
 }
-.trains-gare.arrivees .train-ligne.principal .dest-long, .dest-court {
+.trains-gare.arrivees .train-ligne.principal .dest-long,
+.dest-court {
   color: #fca5a5;
 }
-.dest-court { display: none; }
+.dest-court {
+  display: none;
+}
 
 @media (max-width: 700px) {
-  .dest-long { display: none; }
-  .dest-court { display: inline; }
+  .dest-long {
+    display: none;
+  }
+  .dest-court {
+    display: inline;
+  }
 }
 
 /* Deuxième train — petit */
@@ -687,6 +696,13 @@ h1 span {
     position: static;
     margin-top: 1rem;
   }
-  .dest-long { display: none; }
-  .dest-court { display: inline; }
+  .dest-long {
+    display: none;
+  }
+  .dest-court {
+    display: inline;
+  }
+  .creneau .resume {
+    display: none;
+  }
 }
