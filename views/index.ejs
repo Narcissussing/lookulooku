@@ -51,6 +51,7 @@
 
           <div class="trains-gare departs">
             <h3>Départs</h3>
+            <% if (departsTrilportDepart.length > 0) { %>
             <% departsTrilportDepart.forEach((train, i) => { %>
             <div class="train-ligne <%= i === 0 ? 'principal' : 'secondaire' %>">
               <span class="train-heure"><%= train.heureFormatee %></span>
@@ -59,10 +60,14 @@
               <span class="train-countdown"><%= train.dansXMin %> min</span>
             </div>
             <% }) %>
+            <% } else { %>
+            <span class="statut-service termine">Terminé</span>
+            <% } %>
           </div>
 
           <div class="trains-gare arrivees">
             <h3>Arrivées</h3>
+            <% if (arrivesTrilport.length > 0) { %>
             <% arrivesTrilport.forEach((train, i) => { %>
             <div class="train-ligne <%= i === 0 ? 'principal' : 'secondaire' %>">
               <span class="train-heure"><%= train.heureFormatee %></span>
@@ -71,6 +76,9 @@
               <span class="train-countdown"><%= train.dansXMin %> min</span>
             </div>
             <% }) %>
+            <% } else { %>
+            <span class="statut-service termine">Terminé</span>
+            <% } %>
           </div>
 
         </div>

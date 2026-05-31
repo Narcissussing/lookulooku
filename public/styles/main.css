@@ -508,7 +508,7 @@ h1 span {
   font-size: 1.4rem;
 }
 .train-ligne.principal .dest-long,
-.dest-court {
+.train-ligne.principal .dest-court {
   font-size: 0.7rem;
 }
 
@@ -516,18 +516,41 @@ h1 span {
   color: #4ade80;
 }
 .trains-gare.departs .train-ligne.principal .dest-long,
-.dest-court {
+.trains-gare.departs .train-ligne.principal .dest-court {
   color: #86efac;
 }
 .trains-gare.arrivees .train-ligne.principal .train-heure {
   color: #f87171;
 }
 .trains-gare.arrivees .train-ligne.principal .dest-long,
-.dest-court {
+.trains-gare.arrivees .train-ligne.principal .dest-court {
   color: #fca5a5;
 }
 .dest-court {
   display: none;
+}
+
+/* ──────────────────────────────────────────
+   Statut service carte Trilport
+   ────────────────────────────────────────── */
+
+.statut-service {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+.statut-service.termine {
+  color: var(--text-dim);
+  opacity: 0.5;
+}
+
+.statut-service.bientot {
+  color: #f59e0b;
+  animation: clignoter 2s ease-in-out infinite;
 }
 
 @media (max-width: 700px) {
@@ -723,11 +746,11 @@ h1 span {
   /* .creneau .resume {
     display: none;
   } */
-   .creneau .resume {
-  font-size: 0.75rem;
-}
+  .creneau .resume {
+    font-size: 0.75rem;
+  }
 
-.creneau ul {
-  width: 100%;
-}
+  .creneau ul {
+    width: 100%;
+  }
 }

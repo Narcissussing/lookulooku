@@ -234,6 +234,15 @@ app.get("/", async (req, res) => {
         );
       }
     }
+    const maintenant = new Date();
+    let statutDeparts;
+    if (departsTrilportDepart.length > 0) {
+      statutDeparts = "ok";
+    } else {
+      // Vérifier si c'est trop tôt ou trop tard
+      // Pour l'instant on n'a pas l'heure du premier train de la journée
+      statutDeparts = "termine";
+    }
 
     // On enrichit chaque créneau avec verdicts, score et résumé
     const creneauxEvalues = donneesMeteo.map(evaluerCreneau);
@@ -244,7 +253,10 @@ app.get("/", async (req, res) => {
           departsRetour,
           creneau.realHeure,
         ).slice(0, 2);
-        creneau.statutTrain = determinerStatut(creneau.trains, creneau.realHeure);
+        creneau.statutTrain = determinerStatut(
+          creneau.trains,
+          creneau.realHeure,
+        );
       }
     }
     for (const creneau of creneauxEvalues) {
@@ -253,7 +265,10 @@ app.get("/", async (req, res) => {
           departsAller,
           creneau.realHeure,
         ).slice(0, 2);
-        creneau.statutTrain = determinerStatut(creneau.trainsAller, creneau.realHeure);
+        creneau.statutTrain = determinerStatut(
+          creneau.trainsAller,
+          creneau.realHeure,
+        );
       }
     }
     res.render("index.ejs", {
@@ -264,6 +279,7 @@ app.get("/", async (req, res) => {
       departsTrilportDepart,
       arrivesTrilport,
       messages,
+      statutDeparts,
     });
   } catch (error) {
     console.error(error.message);
