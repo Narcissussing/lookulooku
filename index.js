@@ -1,20 +1,23 @@
 import "dotenv/config";
 import express from "express";
-import axios from "axios";
 
-import { recupererProchainsPassages, recupererMeteo, recupererPrevisions, recupererInfosTrafic } from "./services/api.js";
-import { extraireDeparts, extraireMessages, evaluerCreneau, trouverTrainsPourCreneau, trouverTrainsEntre, determinerStatut } from "./services/utils.js";
+import {
+  recupererProchainsPassages,
+  recupererMeteo,
+  recupererPrevisions,
+  recupererInfosTrafic,
+} from "./services/api.js";
+import {
+  extraireDeparts,
+  extraireMessages,
+  construireDonneesMeteo,
+  enrichirCreneaux,
+  filtrerDeparts,
+  evaluerCreneau
+} from "./services/utils.js";
 
 const app = express();
 const port = 666;
-
-const OW_API_KEY = process.env.OPENWEATHER_API_KEY;
-const IDFM_API_KEY = process.env.IDFM_API_KEY;
-
-
-const OW_URL = "https://api.openweathermap.org/data/2.5";
-const OM_URL = "https://api.open-meteo.com/v1/";
-const IDFM_URL = "https://prim.iledefrance-mobilites.fr/marketplace";
 
 const villes = [
   {
@@ -33,14 +36,47 @@ const villes = [
 ];
 const heuresRecherchees = [
   // Aller
-  { realHeure: "17h30", forecastHeure: "T18:00", villeIndex: 0, direction: "aller" },
-  { realHeure: "18h30", forecastHeure: "T19:00", villeIndex: 0, direction: "aller" },
-  { realHeure: "19h30", forecastHeure: "T20:00", villeIndex: 0, direction: "aller" },
+  {
+    realHeure: "17h30",
+    forecastHeure: "T18:00",
+    villeIndex: 0,
+    direction: "aller",
+  },
+  {
+    realHeure: "18h30",
+    forecastHeure: "T19:00",
+    villeIndex: 0,
+    direction: "aller",
+  },
+  {
+    realHeure: "19h30",
+    forecastHeure: "T20:00",
+    villeIndex: 0,
+    direction: "aller",
+  },
 
   // Retour
-  { realHeure: "20h05", forecastHeure: "T20:00", villeIndex: 1, direction: "retour", prochainCreneau: "20h30" },
-  { realHeure: "20h30", forecastHeure: "T21:00", villeIndex: 1, direction: "retour", prochainCreneau: "21h05" },
-  { realHeure: "21h05", forecastHeure: "T21:00", villeIndex: 1, direction: "retour", prochainCreneau: null },
+  {
+    realHeure: "20h05",
+    forecastHeure: "T20:00",
+    villeIndex: 1,
+    direction: "retour",
+    prochainCreneau: "20h30",
+  },
+  {
+    realHeure: "20h30",
+    forecastHeure: "T21:00",
+    villeIndex: 1,
+    direction: "retour",
+    prochainCreneau: "21h05",
+  },
+  {
+    realHeure: "21h05",
+    forecastHeure: "T21:00",
+    villeIndex: 1,
+    direction: "retour",
+    prochainCreneau: null,
+  },
 ];
 
 app.set("view engine", "ejs");
@@ -60,82 +96,43 @@ app.get("/", async (req, res) => {
     const departsTrilport = extraireDeparts(passagesTrilport);
 
     // Départs Trilport → Meaux / Paris
-    const donneesMeteo = [];
-    const departsTrilportDepart = departsTrilport
-      .filter(
-        (train) =>
-          train.destination === "Meaux" || train.destination === "Paris Est",
-      )
-      .sort((a, b) => new Date(a.heure) - new Date(b.heure))
-      .slice(0, 2);
+    const departsTrilportDepart = filtrerDeparts(
+      departsTrilport,
+      ["Meaux", "Paris Est"],
+      2,
+    );
 
     // Arrivées à Trilport depuis l'autre sens
-    const arrivesTrilport = departsTrilport
-      .filter(
-        (train) =>
-          train.destination === "Château-Thierry" ||
-          train.destination === "La Ferté-Milon",
-      )
-      .sort((a, b) => new Date(a.heure) - new Date(b.heure))
-      .slice(0, 2);
+    const arrivesTrilport = filtrerDeparts(
+      departsTrilport,
+      ["Château-Thierry", "La Ferté-Milon"],
+      2,
+    );
 
     const meteos = await Promise.all(villes.map(recupererMeteo));
     const previsions = await Promise.all(villes.map(recupererPrevisions));
 
     const infosTrafic = await recupererInfosTrafic();
     const messages = extraireMessages(infosTrafic);
-    
+
     // Départs utiles depuis Meaux
-    const departsRetour = departsMeaux
-      .filter(
-        (train) =>
-          train.destination === "Château-Thierry" ||
-          train.destination === "La Ferté-Milon",
-      )
-      .sort((a, b) => new Date(a.heure) - new Date(b.heure));
+    const departsRetour = filtrerDeparts(departsMeaux, [
+      "Château-Thierry",
+      "La Ferté-Milon",
+    ]);
 
     // Départs utiles depuis Trilport
-    const departsAller = departsTrilport
-      .filter(
-        (train) =>
-          train.destination === "Meaux" || train.destination === "Paris Est",
-      )
-      .sort((a, b) => new Date(a.heure) - new Date(b.heure));
+    const departsAller = filtrerDeparts(departsTrilport, [
+      "Meaux",
+      "Paris Est",
+    ]);
 
-    // On limite la recherche aux heures d'aujourd'hui pour éviter
-    // de récupérer les mêmes heures d'un autre jour de la semaine
-    const aujourdhui = new Date().toISOString().slice(0, 10);
-
-    for (const heureRecherchee of heuresRecherchees) {
-      const previsionVille = previsions[heureRecherchee.villeIndex];
-
-      // Cible exacte : "2026-05-27T17:00" — pas n'importe quel 17h
-      const cible = `${aujourdhui}${heureRecherchee.forecastHeure}`;
-
-      const index = previsionVille.hourly.time.findIndex((t) => t === cible);
-
-      if (index !== -1) {
-        donneesMeteo.push({
-          ville: villes[heureRecherchee.villeIndex].nom,
-          direction: heureRecherchee.direction,
-          realHeure: heureRecherchee.realHeure,
-          heure: previsionVille.hourly.time[index],
-          temperature: previsionVille.hourly.temperature_2m[index],
-          precipitation: previsionVille.hourly.precipitation[index],
-          cloud_cover: previsionVille.hourly.cloud_cover[index],
-          weather_code: previsionVille.hourly.weather_code[index],
-          prochainCreneau: heureRecherchee.prochainCreneau ?? null,
-          // Heures de lever/coucher du soleil pour la ville concernée
-          sunrise: meteos[heureRecherchee.villeIndex].sys.sunrise,
-          sunset: meteos[heureRecherchee.villeIndex].sys.sunset,
-        });
-      } else {
-        console.warn(
-          `Heure ${cible} non trouvée pour ${villes[heureRecherchee.villeIndex].nom}.`,
-        );
-      }
-    }
-    const maintenant = new Date();
+    const donneesMeteo = construireDonneesMeteo(
+      previsions,
+      meteos,
+      villes,
+      heuresRecherchees,
+    );
     let statutDeparts;
     if (departsTrilportDepart.length > 0) {
       statutDeparts = "ok";
@@ -146,33 +143,11 @@ app.get("/", async (req, res) => {
     }
 
     // On enrichit chaque créneau avec verdicts, score et résumé
-    const creneauxEvalues = donneesMeteo.map(evaluerCreneau);
-    // Associer les trains aux créneaux retour
-    for (const creneau of creneauxEvalues) {
-      if (creneau.direction === "retour") {
-        creneau.trains = trouverTrainsEntre(
-          departsRetour,
-          creneau.realHeure,
-          creneau.prochainCreneau,
-        ).slice(0, 2);
-        creneau.statutTrain = determinerStatut(
-          creneau.trains,
-          creneau.realHeure,
-        );
-      }
-    }
-    for (const creneau of creneauxEvalues) {
-      if (creneau.direction === "aller") {
-        creneau.trainsAller = trouverTrainsPourCreneau(
-          departsAller,
-          creneau.realHeure,
-        ).slice(0, 2);
-        creneau.statutTrain = determinerStatut(
-          creneau.trainsAller,
-          creneau.realHeure,
-        );
-      }
-    }
+    const creneauxEvalues = enrichirCreneaux(
+      donneesMeteo.map(evaluerCreneau),
+      departsAller,
+      departsRetour,
+    );
     res.render("index.ejs", {
       meteos,
       creneaux: creneauxEvalues,
@@ -189,11 +164,11 @@ app.get("/", async (req, res) => {
     res.render("index.ejs", {
       meteos: [],
       creneaux: [],
+      messages: [],
       erreur: error.message,
     });
   }
 });
-
 
 app.listen(port, () => {
   console.log(`Server running on port: ${port}`);

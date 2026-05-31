@@ -147,3 +147,57 @@ export function trouverTrainsEntre(trains, realHeure, prochainCreneau) {
     return heureTrain > debut && heureTrain <= fin;
   });
 }
+
+// Construire le tableau des données météo pour chaque créneau
+export function construireDonneesMeteo(previsions, meteos, villes, heuresRecherchees) {
+  const aujourdhui = new Date().toISOString().slice(0, 10);
+  const donneesMeteo = [];
+
+  for (const heureRecherchee of heuresRecherchees) {
+    const previsionVille = previsions[heureRecherchee.villeIndex];
+    const cible = `${aujourdhui}${heureRecherchee.forecastHeure}`;
+    const index = previsionVille.hourly.time.findIndex((t) => t === cible);
+
+    if (index !== -1) {
+      donneesMeteo.push({
+        ville: villes[heureRecherchee.villeIndex].nom,
+        direction: heureRecherchee.direction,
+        realHeure: heureRecherchee.realHeure,
+        heure: previsionVille.hourly.time[index],
+        temperature: previsionVille.hourly.temperature_2m[index],
+        precipitation: previsionVille.hourly.precipitation[index],
+        cloud_cover: previsionVille.hourly.cloud_cover[index],
+        weather_code: previsionVille.hourly.weather_code[index],
+        prochainCreneau: heureRecherchee.prochainCreneau ?? null,
+        sunrise: meteos[heureRecherchee.villeIndex].sys.sunrise,
+        sunset: meteos[heureRecherchee.villeIndex].sys.sunset,
+      });
+    } else {
+      console.warn(`Heure ${cible} non trouvée pour ${villes[heureRecherchee.villeIndex].nom}.`);
+    }
+  }
+
+  return donneesMeteo;
+}
+
+// Filtrer et trier les départs par destination
+export function filtrerDeparts(trains, destinations, limite = null) {
+  const resultat = trains
+    .filter((train) => destinations.includes(train.destination))
+    .sort((a, b) => new Date(a.heure) - new Date(b.heure));
+  return limite ? resultat.slice(0, limite) : resultat;
+}
+
+// Associer les trains aux créneaux et calculer leur statut
+export function enrichirCreneaux(creneaux, departsAller, departsRetour) {
+  for (const creneau of creneaux) {
+    if (creneau.direction === "aller") {
+      creneau.trainsAller = trouverTrainsPourCreneau(departsAller, creneau.realHeure).slice(0, 2);
+      creneau.statutTrain = determinerStatut(creneau.trainsAller, creneau.realHeure);
+    } else if (creneau.direction === "retour") {
+      creneau.trains = trouverTrainsEntre(departsRetour, creneau.realHeure, creneau.prochainCreneau).slice(0, 2);
+      creneau.statutTrain = determinerStatut(creneau.trains, creneau.realHeure);
+    }
+  }
+  return creneaux;
+}
