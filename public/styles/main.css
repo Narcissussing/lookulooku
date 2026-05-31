@@ -146,7 +146,13 @@ ul {
   border-bottom: 1px solid var(--border);
   margin-bottom: 1.5rem;
 }
-
+.logo-link,
+.logo-link:visited {
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  align-items: center;
+}
 h1 {
   font-family: var(--font-display);
   font-weight: 700;
@@ -553,15 +559,6 @@ h1 span {
   animation: clignoter 2s ease-in-out infinite;
 }
 
-@media (max-width: 700px) {
-  .dest-long {
-    display: none;
-  }
-  .dest-court {
-    display: inline;
-  }
-}
-
 /* Deuxième train — petit */
 .train-ligne.secondaire .train-heure {
   font-size: 0.8rem;
@@ -689,25 +686,20 @@ h1 span {
   animation: clignoter 1s ease-in-out infinite;
   z-index: 1;
 }
-/* ──────────────────────────────────────────
-   Responsive
-   ────────────────────────────────────────── */
-
 @media (max-width: 700px) {
+  /* Layout columns -> single column */
   .villes,
   .colonnes-creneaux {
     grid-template-columns: 1fr;
   }
 
+  /* Main card adjustments */
   .carte-principale .temp {
     font-size: 3rem;
   }
-
-  /* Carte Trilport — trains en dessous de la météo */
   .carte-principale .carte-contenu {
     flex-direction: column;
   }
-
   .carte-principale .trains-panneau {
     width: 100%;
     justify-content: space-between;
@@ -715,22 +707,21 @@ h1 span {
     padding-top: 0.75rem;
     margin-top: 0.75rem;
   }
-
   .trains-gare {
     align-items: flex-start;
   }
 
-  /* Créneaux gym — empiler heure/résumé/trains */
+  /* Créneaux: stack and compact text */
   .creneau {
     flex-wrap: wrap;
     gap: 0.4rem;
   }
-
+  .creneau .resume,
   .train-creneau {
     font-size: 0.75rem;
   }
 
-  /* Bandeau — plus compact */
+  /* Compact traffic banner */
   .bandeau-trafic {
     font-size: 0.7rem;
     padding: 0.5rem 1rem;
@@ -742,15 +733,5 @@ h1 span {
   }
   .dest-court {
     display: inline;
-  }
-  /* .creneau .resume {
-    display: none;
-  } */
-  .creneau .resume {
-    font-size: 0.75rem;
-  }
-
-  .creneau ul {
-    width: 100%;
   }
 }
