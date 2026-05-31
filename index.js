@@ -28,45 +28,15 @@ const villes = [
   },
 ];
 const heuresRecherchees = [
-  // Aller — départ Trilport, on regarde la météo à Trilport
-  {
-    realHeure: "17h30",
-    forecastHeure: "T18:00",
-    villeIndex: 0,
-    direction: "aller",
-  },
-  {
-    realHeure: "18h30",
-    forecastHeure: "T19:00",
-    villeIndex: 0,
-    direction: "aller",
-  },
-  {
-    realHeure: "19h30",
-    forecastHeure: "T20:00",
-    villeIndex: 0,
-    direction: "aller",
-  },
+  // Aller
+  { realHeure: "17h30", forecastHeure: "T18:00", villeIndex: 0, direction: "aller" },
+  { realHeure: "18h30", forecastHeure: "T19:00", villeIndex: 0, direction: "aller" },
+  { realHeure: "19h30", forecastHeure: "T20:00", villeIndex: 0, direction: "aller" },
 
-  // Retour — départ Meaux, on regarde la météo à Meaux
-  {
-    realHeure: "20h05",
-    forecastHeure: "T20:00",
-    villeIndex: 1,
-    direction: "retour",
-  },
-  {
-    realHeure: "20h30",
-    forecastHeure: "T21:00",
-    villeIndex: 1,
-    direction: "retour",
-  },
-  {
-    realHeure: "21h05",
-    forecastHeure: "T21:00",
-    villeIndex: 1,
-    direction: "retour",
-  },
+  // Retour
+  { realHeure: "20h05", forecastHeure: "T20:00", villeIndex: 1, direction: "retour", prochainCreneau: "20h30" },
+  { realHeure: "20h30", forecastHeure: "T21:00", villeIndex: 1, direction: "retour", prochainCreneau: "21h05" },
+  { realHeure: "21h05", forecastHeure: "T21:00", villeIndex: 1, direction: "retour", prochainCreneau: null },
 ];
 
 app.set("view engine", "ejs");
@@ -183,8 +153,7 @@ app.get("/", async (req, res) => {
 
     const infosTrafic = await recupererInfosTrafic();
     const messages = extraireMessages(infosTrafic);
-    console.log("Messages de trafic :", messages);
-
+    
     // Départs utiles depuis Meaux
     const departsRetour = departsMeaux
       .filter(
@@ -224,6 +193,7 @@ app.get("/", async (req, res) => {
           precipitation: previsionVille.hourly.precipitation[index],
           cloud_cover: previsionVille.hourly.cloud_cover[index],
           weather_code: previsionVille.hourly.weather_code[index],
+          prochainCreneau: heureRecherchee.prochainCreneau ?? null,
           // Heures de lever/coucher du soleil pour la ville concernée
           sunrise: meteos[heureRecherchee.villeIndex].sys.sunrise,
           sunset: meteos[heureRecherchee.villeIndex].sys.sunset,
@@ -249,9 +219,10 @@ app.get("/", async (req, res) => {
     // Associer les trains aux créneaux retour
     for (const creneau of creneauxEvalues) {
       if (creneau.direction === "retour") {
-        creneau.trains = trouverTrainsPourCreneau(
+        creneau.trains = trouverTrainsEntre(
           departsRetour,
           creneau.realHeure,
+          creneau.prochainCreneau,
         ).slice(0, 2);
         creneau.statutTrain = determinerStatut(
           creneau.trains,
@@ -352,6 +323,7 @@ function trouverTrainsPourCreneau(trains, realHeure) {
     return heureTrain >= borneMin && heureTrain <= borneMax;
   });
 }
+
 // Calculer le nombre de minutes avant le départ
 function minutesAvantDepart(iso) {
   const maintenant = new Date();
@@ -402,6 +374,26 @@ function determinerStatut(trains, realHeure) {
   if (maintenant > heureGym) return "passe";
   return "attente";
 }
+
+function trouverTrainsEntre(trains, realHeure, prochainCreneau) {
+  const [h1, m1] = realHeure.split("h").map(Number);
+  const maintenant = new Date();
+  const debut = new Date(maintenant.getFullYear(), maintenant.getMonth(), maintenant.getDate(), h1, m1);
+
+  // Si pas de prochain créneau, juste après
+  if (!prochainCreneau) {
+    return trains.filter((train) => new Date(train.heure).getTime() > debut.getTime());
+  }
+
+  const [h2, m2] = prochainCreneau.split("h").map(Number);
+  const fin = new Date(maintenant.getFullYear(), maintenant.getMonth(), maintenant.getDate(), h2, m2);
+
+  return trains.filter((train) => {
+    const heureTrain = new Date(train.heure).getTime();
+    return heureTrain > debut.getTime() && heureTrain <= fin.getTime();
+  });
+}
+
 app.listen(port, () => {
   console.log(`Server running on port: ${port}`);
 });
