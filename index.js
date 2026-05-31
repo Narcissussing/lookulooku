@@ -13,7 +13,7 @@ import {
   construireDonneesMeteo,
   enrichirCreneaux,
   filtrerDeparts,
-  evaluerCreneau
+  evaluerCreneau,
 } from "./services/utils.js";
 
 const app = express();
@@ -148,6 +148,18 @@ app.get("/", async (req, res) => {
       departsAller,
       departsRetour,
     );
+    // Marquer le meilleur créneau aller et retour
+    for (const direction of ["aller", "retour"]) {
+      const creneauxDirection = creneauxEvalues.filter(
+        (c) => c.direction === direction,
+      );
+      const meilleur = creneauxDirection.reduce(
+        (min, c) => (c.score < min.score ? c : min),
+        creneauxDirection[0],
+      );
+      if (meilleur) meilleur.estMeilleur = true;
+    }
+    console.log(creneauxEvalues)
     res.render("index.ejs", {
       meteos,
       creneaux: creneauxEvalues,

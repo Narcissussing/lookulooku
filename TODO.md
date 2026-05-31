@@ -10,6 +10,5 @@
 - [ ] Lunettes : tenir compte de l'heure aussi en hiver
 - [ ] Indicateur visuel du "meilleur créneau" (basé sur le score)
 - [ ] Modal avec détails par créneau (température, précipitations…)
-- [ ] Mettre à jour la météo en arrière-plan (sans recharger la page)
-- [ ] Refactoring JS — séparer en modules (api.js, utils.js, index.js)
+- [X] Refactoring JS — séparer en modules (api.js, utils.js, index.js)
 - [X] Refactoring CSS — réorganiser et nettoyer les règles redondantes

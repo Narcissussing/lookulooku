@@ -613,7 +613,14 @@ h1 span {
   font-size: 0.6rem;
   opacity: 0.4;
 }
+/* ──────────────────────────────────────────
+   Meilleur créneau train
+   ────────────────────────────────────────── */
 
+.creneau.meilleur {
+  border-left: 3px solid var(--accent);
+  padding-left: 0.5rem;
+}
 /* ──────────────────────────────────────────
    Bandeau trafic — fixé en bas de page
    ────────────────────────────────────────── */

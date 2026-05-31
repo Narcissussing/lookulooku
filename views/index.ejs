@@ -110,7 +110,7 @@
         <h3>Aller (Trilport → Meaux)</h3>
         <ul class="creneaux-liste">
           <% creneaux.filter((c) => c.direction === "aller").forEach((c) => { %>
-          <li class="creneau">
+          <li class="creneau <%= c.estMeilleur ? 'meilleur' : '' %>">
             <span class="heure"><%= c.realHeure %></span>
             <span class="resume"><%= c.resume %></span>
             <% if (c.statutTrain === "ok") { %>
@@ -137,7 +137,7 @@
         <h3>Retour (Meaux → Trilport)</h3>
         <ul class="creneaux-liste">
           <% creneaux.filter((c) => c.direction === "retour").forEach((c) => { %>
-          <li class="creneau">
+          <li class="creneau <%= c.estMeilleur ? 'meilleur' : '' %>">
             <span class="heure"><%= c.realHeure %></span>
             <span class="resume"><%= c.resume %></span>
             <% if (c.statutTrain === "ok") { %>
