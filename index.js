@@ -131,8 +131,8 @@ function evaluerCreneau(donnees) {
 
   // Le résumé textuel
   let resume;
-  if (parapluie && couche) resume = "🌧️🥶 Évite — pluie et froid";
-  else if (parapluie) resume = "🌧️ Parapluie obligatoire";
+  if (parapluie && couche) resume = "🌧️🥶 Défavorable";
+  else if (parapluie) resume = "🌧️ Parapluie !";
   else if (couche) resume = "🥶 Couvre-toi";
   else if (lunettes) resume = "☀️ Lunettes !";
   else resume = "✅ Tranquille";
@@ -244,6 +244,7 @@ app.get("/", async (req, res) => {
           departsRetour,
           creneau.realHeure,
         ).slice(0, 2);
+        creneau.statutTrain = determinerStatut(creneau.trains, creneau.realHeure);
       }
     }
     for (const creneau of creneauxEvalues) {
@@ -252,6 +253,7 @@ app.get("/", async (req, res) => {
           departsAller,
           creneau.realHeure,
         ).slice(0, 2);
+        creneau.statutTrain = determinerStatut(creneau.trainsAller, creneau.realHeure);
       }
     }
     res.render("index.ejs", {
@@ -297,7 +299,9 @@ function extraireDeparts(data) {
       visite.MonitoredVehicleJourney.MonitoredCall.ExpectedArrivalTime;
     return {
       destination: visite.MonitoredVehicleJourney.DestinationName?.[0]?.value,
-        destinationCourte: raccourcirDestination(visite.MonitoredVehicleJourney.DestinationName?.[0]?.value),
+      destinationCourte: raccourcirDestination(
+        visite.MonitoredVehicleJourney.DestinationName?.[0]?.value,
+      ),
       direction: visite.MonitoredVehicleJourney.DirectionRef?.value,
       heure,
       heureFormatee: formaterHeure(heure),
@@ -317,16 +321,20 @@ function trouverTrainsPourCreneau(trains, realHeure) {
   // Convertir "17h30" en Date locale (heure Paris si serveur en Paris)
   const [heures, minutes] = realHeure.split("h").map(Number);
   const maintenant = new Date();
-  const seuil = new Date(
+  const cible = new Date(
     maintenant.getFullYear(),
     maintenant.getMonth(),
     maintenant.getDate(),
     heures,
     minutes,
   );
-
+  const borneMin = cible.getTime() - 10 * 60000;
+  const borneMax = cible.getTime() + 10 * 60000;
   // new Date() compare toujours en millisecondes UTC — pas besoin de correction manuelle
-  return trains.filter((train) => new Date(train.heure) >= seuil);
+  return trains.filter((train) => {
+    const heureTrain = new Date(train.heure).getTime();
+    return heureTrain >= borneMin && heureTrain <= borneMax;
+  });
 }
 // Calculer le nombre de minutes avant le départ
 function minutesAvantDepart(iso) {
@@ -341,12 +349,13 @@ function extraireMessages(data) {
     (delivery) => delivery.InfoMessage,
   );
   return messages.map((msg) => {
-    const texte = msg.Content.Message.find((m) => m.MessageType === "SHORT_MESSAGE")
-      ?.MessageText.value;
+    const texte = msg.Content.Message.find(
+      (m) => m.MessageType === "SHORT_MESSAGE",
+    )?.MessageText.value;
     return {
       texte,
       canal: msg.InfoChannelRef.value,
-      valideJusqua: msg.ValidUntilTime
+      valideJusqua: msg.ValidUntilTime,
     };
   });
 }
@@ -356,11 +365,27 @@ function raccourcirDestination(dest) {
     "Château-Thierry": "Ch.-Thierry",
     "La Ferté-Milon": "La Ferté",
     "Paris Est": "Paris Est",
-    "Meaux": "Meaux",
+    Meaux: "Meaux",
   };
   return raccourcis[dest] ?? dest;
 }
 
+// Déterminer le statut d'un créneau selon les trains disponibles
+function determinerStatut(trains, realHeure) {
+  const maintenant = new Date();
+  const [h, m] = realHeure.split("h").map(Number);
+  const heureGym = new Date(
+    maintenant.getFullYear(),
+    maintenant.getMonth(),
+    maintenant.getDate(),
+    h,
+    m,
+  );
+
+  if (trains.length > 0) return "ok";
+  if (maintenant > heureGym) return "passe";
+  return "attente";
+}
 app.listen(port, () => {
   console.log(`Server running on port: ${port}`);
 });

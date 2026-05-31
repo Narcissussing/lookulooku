@@ -101,22 +101,26 @@
           <li class="creneau">
             <span class="heure"><%= c.realHeure %></span>
             <span class="resume"><%= c.resume %></span>
-            <% if (c.trainsAller && c.trainsAller.length > 0) { %>
+            <% if (c.statutTrain === "ok") { %>
             <ul>
               <% c.trainsAller.forEach((train) => { %>
               <li class="train-creneau">
                 <span class="train-creneau-heure"><%= train.heureFormatee %></span>
                 <span class="dest-long"><%= train.destination %></span>
-                <span class="dest-court"><%= train.destinationCourte %></span> <span class="train-creneau-countdown"><%= train.dansXMin %> min</span>
+                <span class="dest-court"><%= train.destinationCourte %></span>
+                <span class="train-creneau-countdown"><%= train.dansXMin %> min</span>
               </li>
               <% }) %>
             </ul>
+            <% } else if (c.statutTrain === "passe") { %>
+            <span class="train-statut passe">🚫</span>
+            <% } else { %>
+            <span class="train-statut attente">· · ·</span>
             <% } %>
           </li>
           <% }) %>
         </ul>
       </div>
-
       <div>
         <h3>Retour (Meaux → Trilport)</h3>
         <ul class="creneaux-liste">
@@ -124,17 +128,21 @@
           <li class="creneau">
             <span class="heure"><%= c.realHeure %></span>
             <span class="resume"><%= c.resume %></span>
-
-            <% if (c.direction === "retour" && c.trains) { %>
+            <% if (c.statutTrain === "ok") { %>
             <ul>
               <% c.trains.forEach((train) => { %>
               <li class="train-creneau">
                 <span class="train-creneau-heure"><%= train.heureFormatee %></span>
                 <span class="dest-long"><%= train.destination %></span>
-                <span class="dest-court"><%= train.destinationCourte %></span> <span class="train-creneau-countdown"><%= train.dansXMin %> min</span>
+                <span class="dest-court"><%= train.destinationCourte %></span>
+                <span class="train-creneau-countdown"><%= train.dansXMin %> min</span>
               </li>
               <% }) %>
             </ul>
+            <% } else if (c.statutTrain === "passe") { %>
+            <span class="train-statut passe">🚫</span>
+            <% } else { %>
+            <span class="train-statut attente">· · ·</span>
             <% } %>
           </li>
           <% }) %>
