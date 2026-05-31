@@ -702,7 +702,14 @@ h1 span {
   .dest-court {
     display: inline;
   }
-  .creneau .resume {
+  /* .creneau .resume {
     display: none;
-  }
+  } */
+   .creneau .resume {
+  font-size: 0.75rem;
+}
+
+.creneau ul {
+  width: 100%;
+}
 }
