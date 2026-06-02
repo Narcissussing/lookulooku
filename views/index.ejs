@@ -18,7 +18,7 @@
 <body>
 
   <%# Bouton de bascule de thème %>
-    <header class="header">
+  <header class="header">
     <h1>
       <a href="/" class="logo-link">
         looku<span>•</span>looku
@@ -45,10 +45,10 @@
       <div class="carte-contenu">
 
         <div class="meteo-info">
-          <h2><%= meteos[0].name %></h2>
-          <p class="temp"><%= meteos[0].main.temp.toFixed(1) %>°C</p>
-          <p class="description"><%= meteos[0].weather[0].description %></p>
-          <p class="ressenti">Ressenti <%= meteos[0].main.feels_like.toFixed(1) %>°C</p>
+          <h2>Trilport</h2>
+          <p class="temp"><%= meteos[0].current.temperature_2m.toFixed(1) %>°C</p>
+          <p class="description"><%= traduireCodeMeteo(meteos[0].current.weather_code) %></p>
+          <p class="ressenti">Ressenti <%= meteos[0].current.apparent_temperature.toFixed(1) %>°C</p>
         </div>
 
         <div class="trains-panneau">
@@ -91,9 +91,9 @@
 
     <%# Carte secondaire : Meaux %>
     <article class="carte carte-secondaire">
-      <h2><%= meteos[1].name %></h2>
-      <p class="temp"><%= meteos[1].main.temp.toFixed(0) %>°</p>
-      <p class="description"><%= meteos[1].weather[0].description %></p>
+      <h2>Meaux</h2>
+      <p class="temp"><%= meteos[1].current.temperature_2m.toFixed(0) %>°C</p>
+      <p class="description"><%= traduireCodeMeteo(meteos[1].current.weather_code) %></p>
     </article>
 
   </section>

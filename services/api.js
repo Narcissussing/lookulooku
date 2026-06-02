@@ -1,10 +1,8 @@
 import axios from "axios";
 
-const OW_API_KEY = process.env.OPENWEATHER_API_KEY;
 const IDFM_API_KEY = process.env.IDFM_API_KEY;
 
 const URLs = {
-  OW: "https://api.openweathermap.org/data/2.5",
   OM: "https://api.open-meteo.com/v1/",
   IDFM: "https://prim.iledefrance-mobilites.fr/marketplace",
 };
@@ -31,14 +29,15 @@ export async function recupererInfosTrafic() {
   return data;
 }
 
-// Récupérer la météo actuelle
 export async function recupererMeteo(ville) {
-  const { data } = await axios.get(`${URLs.OW}/weather`, {
+  const { data } = await axios.get(`${URLs.OM}/forecast`, {
     params: {
-      q: ville.ow,
-      appid: OW_API_KEY,
-      units: "metric",
-      lang: "fr",
+      latitude: ville.latitude,
+      longitude: ville.longitude,
+      current:
+        "temperature_2m,apparent_temperature,weather_code,precipitation,is_day",
+      daily: "sunrise,sunset",
+      timezone: "Europe/Paris",
     },
   });
   return data;

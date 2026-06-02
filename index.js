@@ -14,6 +14,7 @@ import {
   enrichirCreneaux,
   filtrerDeparts,
   evaluerCreneau,
+  traduireCodeMeteo,
 } from "./services/utils.js";
 
 const app = express();
@@ -22,14 +23,12 @@ const port = 666;
 const villes = [
   {
     nom: "Trilport",
-    ow: "Trilport,FR",
     latitude: 48.9568,
     longitude: 2.9508,
   },
 
   {
     nom: "Meaux",
-    ow: "Meaux,FR",
     latitude: 48.9603,
     longitude: 2.8789,
   },
@@ -164,11 +163,11 @@ app.get("/", async (req, res) => {
       meteos,
       creneaux: creneauxEvalues,
       departsRetour,
-
       departsTrilportDepart,
       arrivesTrilport,
       messages,
       statutDeparts,
+      traduireCodeMeteo,
     });
   } catch (error) {
     console.error(error.message);

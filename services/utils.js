@@ -149,7 +149,12 @@ export function trouverTrainsEntre(trains, realHeure, prochainCreneau) {
 }
 
 // Construire le tableau des données météo pour chaque créneau
-export function construireDonneesMeteo(previsions, meteos, villes, heuresRecherchees) {
+export function construireDonneesMeteo(
+  previsions,
+  meteos,
+  villes,
+  heuresRecherchees,
+) {
   const aujourdhui = new Date().toISOString().slice(0, 10);
   const donneesMeteo = [];
 
@@ -169,11 +174,19 @@ export function construireDonneesMeteo(previsions, meteos, villes, heuresRecherc
         cloud_cover: previsionVille.hourly.cloud_cover[index],
         weather_code: previsionVille.hourly.weather_code[index],
         prochainCreneau: heureRecherchee.prochainCreneau ?? null,
-        sunrise: meteos[heureRecherchee.villeIndex].sys.sunrise,
-        sunset: meteos[heureRecherchee.villeIndex].sys.sunset,
+        sunrise:
+          new Date(
+            meteos[heureRecherchee.villeIndex].daily.sunrise[0],
+          ).getTime() / 1000,
+        sunset:
+          new Date(
+            meteos[heureRecherchee.villeIndex].daily.sunset[0],
+          ).getTime() / 1000,
       });
     } else {
-      console.warn(`Heure ${cible} non trouvée pour ${villes[heureRecherchee.villeIndex].nom}.`);
+      console.warn(
+        `Heure ${cible} non trouvée pour ${villes[heureRecherchee.villeIndex].nom}.`,
+      );
     }
   }
 
@@ -192,12 +205,50 @@ export function filtrerDeparts(trains, destinations, limite = null) {
 export function enrichirCreneaux(creneaux, departsAller, departsRetour) {
   for (const creneau of creneaux) {
     if (creneau.direction === "aller") {
-      creneau.trainsAller = trouverTrainsPourCreneau(departsAller, creneau.realHeure).slice(0, 2);
-      creneau.statutTrain = determinerStatut(creneau.trainsAller, creneau.realHeure);
+      creneau.trainsAller = trouverTrainsPourCreneau(
+        departsAller,
+        creneau.realHeure,
+      ).slice(0, 2);
+      creneau.statutTrain = determinerStatut(
+        creneau.trainsAller,
+        creneau.realHeure,
+      );
     } else if (creneau.direction === "retour") {
-      creneau.trains = trouverTrainsEntre(departsRetour, creneau.realHeure, creneau.prochainCreneau).slice(0, 2);
+      creneau.trains = trouverTrainsEntre(
+        departsRetour,
+        creneau.realHeure,
+        creneau.prochainCreneau,
+      ).slice(0, 2);
       creneau.statutTrain = determinerStatut(creneau.trains, creneau.realHeure);
     }
   }
   return creneaux;
+}
+
+// Traduire un code météo WMO en description française
+export function traduireCodeMeteo(code) {
+  const descriptions = {
+    0: "☀️ ensoleillé",
+    1: "🌤️ peu nuageux",
+    2: "⛅ partiellement nuageux",
+    3: "☁️ couvert",
+    45: "🌫️ brouillard",
+    48: "🌫️❄️ brouillard givrant",
+    51: "🌦️ bruine légère",
+    53: "🌦️ bruine",
+    55: "🌧️ bruine dense",
+    61: "🌧️ pluie légère",
+    63: "🌧️🌧️ pluie",
+    65: "🌧️🌧️🌧️ forte pluie",
+    71: "🌨️ neige légère",
+    73: "🌨️🌨️ neige",
+    75: "❄️❄️❄️ forte neige",
+    80: "🌦️ averses légères",
+    81: "🌧️ averses",
+    82: "⛈️ fortes averses",
+    95: "⛈️ orage",
+    96: "⛈️🌨️ orage avec grêle",
+    99: "⛈️⛈️ orage violent",
+  };    
+  return descriptions[code] ?? "conditions variables";
 }
