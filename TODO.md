@@ -4,11 +4,12 @@
 - [X] Carte gare Trilport (départs + arrivées)
 - [X] Bascule de thème Bureau / Cinéma
 - [X] Bandeau trafic avec alerte visuelle
-- [ ] Météo de demain (toggle ou onglets)
 - [X] Infos trafic Ligne P (perturbations)
-- [ ] Bouton gym caché les dimanches (avec override possible)
-- [ ] Lunettes : tenir compte de l'heure aussi en hiver
 - [X] Indicateur visuel du "meilleur créneau" (basé sur le score)
-- [ ] Modal avec détails par créneau (température, précipitations…)
 - [X] Refactoring JS — séparer en modules (api.js, utils.js, index.js)
 - [X] Refactoring CSS — réorganiser et nettoyer les règles redondantes
+- [ ] Migration vers React (composants, countdown temps réel, refresh partiel)
+- [ ] Modal avec détails par créneau (température, précipitations…)
+- [ ] Bouton gym caché les dimanches (avec override possible)
+- [ ] Lunettes : tenir compte de l'heure aussi en hiver
+- [ ] Météo de demain (toggle ou onglets)
