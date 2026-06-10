@@ -1,7 +1,6 @@
 import axios from "axios";
 
 const IDFM_API_KEY = process.env.IDFM_API_KEY;
-const IDFM_API_KEY2 = process.env.IDFM_API_KEY2;
 
 const URLs = {
   OM: "https://api.open-meteo.com/v1/",
