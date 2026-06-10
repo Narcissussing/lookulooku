@@ -695,6 +695,19 @@ h1 span {
   border-color: var(--border-hover);
   background: var(--surface-2);
 }
+.bandeau-travaux.ouvert span:last-child {
+  display: inline-block;
+  transform: rotate(180deg);
+  transition: transform 0.3s ease;
+}
+.fleche {
+  transition: transform 0.3s ease;
+  display: inline-block;
+}
+
+.bandeau-travaux.ouvert .fleche {
+  transform: rotate(90deg);
+}
 .travaux-liste {
   max-height: 0;
   overflow: hidden;
@@ -790,7 +803,7 @@ h1 span {
   }
 }
 
-.bandeau-trafic.perturbe .bandeau-icone {
+.bandeau-trafic.alerte .bandeau-icone {
   animation: clignoter 1s ease-in-out infinite;
 }
 
