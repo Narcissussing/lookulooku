@@ -645,10 +645,120 @@ h1 span {
   color: #4ade80;
 }
 
-.bandeau-trafic.perturbe {
+.bandeau-trafic.fluide {
+  background: rgba(34, 197, 94, 0.12);
+  border-top: 1px solid rgba(34, 197, 94, 0.3);
+  color: #4ade80;
+}
+
+.bandeau-trafic.info {
+  background: rgba(249, 115, 22, 0.12);
+  border-top: 1px solid rgba(249, 115, 22, 0.3);
+  color: #fb923c;
+}
+
+.bandeau-trafic.alerte {
   background: rgba(239, 68, 68, 0.15);
   border-top: 1px solid rgba(239, 68, 68, 0.4);
   color: #f87171;
+}
+.bandeau-travaux {
+  margin-top: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius);
+
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+}
+
+.bandeau-travaux .trajet {
+  color: var(--text);
+}
+
+.bandeau-travaux .dates {
+  color: var(--text-muted);
+}
+
+
+.bandeau-travaux span:first-child {
+  font-size: 1rem;
+}
+.bandeau-travaux:hover {
+  border-color: var(--border-hover);
+  background: var(--surface-2);
+}
+.travaux-liste {
+  max-height: 0;
+  overflow: hidden;
+
+  opacity: 0;
+
+ transition:
+  max-height 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+  opacity 0.35s ease;
+
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255,255,255,.06);
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+}
+
+.travaux-liste.ouvert {
+  max-height: 600px;
+  opacity: 1;
+}
+
+.travaux-item {
+  padding: 12px 16px;
+
+  color: var(--text-muted);
+  font-size: 0.85rem;
+
+  transform: translateY(-10px);
+  opacity: 0;
+
+  transition:
+    transform .3s ease,
+    opacity .3s ease;
+}
+
+.travaux-item:not(:last-child) {
+  border-bottom: 1px solid var(--border);
+}
+.travaux-liste.ouvert .travaux-item {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.travaux-details {
+  max-height: 0;
+  overflow: hidden;
+
+  opacity: 0;
+
+  transition:
+    max-height 0.35s ease,
+    opacity 0.25s ease,
+    padding 0.25s ease;
+
+  padding-top: 0;
+}
+.travaux-details.open {
+  max-height: 500px;
+  opacity: 1;
+  padding-top: 12px;
+}
+.bandeau-travaux {
+  cursor: pointer;
+  user-select: none;
 }
 /* ──────────────────────────────────────────
    Statut train dans les créneaux

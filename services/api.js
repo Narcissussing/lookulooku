@@ -1,6 +1,7 @@
 import axios from "axios";
 
 const IDFM_API_KEY = process.env.IDFM_API_KEY;
+const IDFM_API_KEY2 = process.env.IDFM_API_KEY2;
 
 const URLs = {
   OM: "https://api.open-meteo.com/v1/",
@@ -23,7 +24,7 @@ export async function recupererProchainsPassages(monitoringRef) {
 
 // Récupérer les infos trafic pour la Ligne P
 export async function recupererInfosTrafic() {
-  const { data } = await idfmClient.get("/general-message", {
+  const { data } = await idfmClient.get("/disruptions_bulk/disruptions/v2", {
     params: { LineRef: "STIF:Line::C01730:" },
   });
   return data;

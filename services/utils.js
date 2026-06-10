@@ -18,24 +18,40 @@ function construireDateLocale(realHeure) {
   );
 }
 
-// Transformer les données de trafic en tableau de messages à afficher
+// Transformer les perturbations en tableau de messages à afficher
 export function extraireMessages(data) {
-  const deliveries = data?.Siri?.ServiceDelivery?.GeneralMessageDelivery ?? [];
-  const messages = deliveries.flatMap(
-    (delivery) => delivery?.InfoMessage ?? [],
-  );
+  const disruptions = data?.disruptions ?? [];
 
-  return messages.map((msg) => {
-    const texte = msg?.Content?.Message?.find(
-      (m) => m.MessageType === "SHORT_MESSAGE",
-    )?.MessageText?.value;
+  return disruptions
+    .filter((d) => {
+      // Garder uniquement les perturbations Ligne P
+      const sections = d.impactedSections ?? [];
 
-    return {
-      texte,
-      canal: msg?.InfoChannelRef?.value,
-      valideJusqua: msg?.ValidUntilTime,
-    };
-  });
+      return sections.some(
+        (s) => s.lineId?.toLowerCase() === "line:idfm:c01730",
+      );
+    })
+    .filter((d) => d.applicationPeriods?.length > 0)
+    .map((d) => {
+      const section = d.impactedSections?.[0];
+
+      return {
+        texte: d.title || d.shortMessage || "Perturbation sur la ligne P",
+        severity: d.severity,
+        cause: d.cause,
+
+        estAujourdhui: estActiveAujourdhui(d.applicationPeriods),
+        concerneMonTrajet: concerneTrajet(d),
+
+        debut: d.applicationPeriods[0].begin,
+        fin: d.applicationPeriods[d.applicationPeriods.length - 1].end,
+
+        trajet:
+          section?.from?.name && section?.to?.name
+            ? `${nettoyerNomArret(section.from.name)} ↔ ${nettoyerNomArret(section.to.name)}`
+            : null,
+      };
+    });
 }
 
 // Transformer les données de passages en tableau de départs simples
@@ -249,6 +265,37 @@ export function traduireCodeMeteo(code) {
     95: "⛈️ orage",
     96: "⛈️🌨️ orage avec grêle",
     99: "⛈️⛈️ orage violent",
-  };    
+  };
   return descriptions[code] ?? "conditions variables";
+}
+
+// Arrêts qui concernent le trajet Trilport ↔ Meaux ↔ Paris
+const ARRETS_TRAJET = [
+  "meaux",
+  "trilport",
+  "château-thierry",
+  "la ferté-milon",
+  "paris est",
+  "gare de l'est",
+];
+
+// Vérifier si une perturbation est active aujourd'hui
+function estActiveAujourdhui(periodes) {
+  const aujourdhui = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  return periodes.some((p) => {
+    const debut = p.begin?.slice(0, 8) ?? "00000000";
+    const fin = p.end?.slice(0, 8) ?? "99999999";
+    return debut <= aujourdhui && fin >= aujourdhui;
+  });
+}
+
+// Vérifier si une perturbation concerne le trajet
+function concerneTrajet(disruption) {
+  const texte = JSON.stringify(disruption.impactedSections ?? []).toLowerCase();
+  return ARRETS_TRAJET.some((arret) => texte.includes(arret));
+}
+
+// Nettoyer le nom d'un arrêt en supprimant les parenthèses et leur contenu
+function nettoyerNomArret(nom) {
+  return nom?.replace(/\s*\(.*?\)/g, "").trim();
 }

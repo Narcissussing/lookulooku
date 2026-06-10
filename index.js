@@ -18,7 +18,7 @@ import {
 } from "./services/utils.js";
 
 const app = express();
-const port = 666;
+const port = 3000;
 
 const villes = [
   {
@@ -111,8 +111,29 @@ app.get("/", async (req, res) => {
     const meteos = await Promise.all(villes.map(recupererMeteo));
     const previsions = await Promise.all(villes.map(recupererPrevisions));
 
+    // await new Promise((resolve) => setTimeout(resolve, 1000));
     const infosTrafic = await recupererInfosTrafic();
+    // const infosTrafic = { disruptions: [] }; // données de test vides
     const messages = extraireMessages(infosTrafic);
+
+    // Déterminer le niveau d'alerte trafic
+    const perturbations = messages.filter(
+      (m) =>
+        m.cause === "PERTURBATION" && m.estAujourdhui && m.concerneMonTrajet,
+    );
+    const texteAlerte = perturbations[0]?.texte ?? null;
+    
+    const informations = messages.filter(
+      (m) => m.cause === "INFORMATION" && m.estAujourdhui,
+    );
+
+    let niveauTrafic = "fluide";
+    const afficherAlerteCarte = perturbations.length > 0;
+    if (perturbations.length > 0) {
+      niveauTrafic = "alerte";
+    } else if (informations.length > 0) {
+      niveauTrafic = "info";
+    }
 
     // Départs utiles depuis Meaux
     const departsRetour = filtrerDeparts(departsMeaux, [
@@ -158,16 +179,36 @@ app.get("/", async (req, res) => {
       );
       if (meilleur) meilleur.estMeilleur = true;
     }
-    console.log(creneauxEvalues)
+
+    const travauxFuturs = messages
+      .filter(
+        (m) => m.cause === "TRAVAUX" && m.concerneMonTrajet,
+      )
+      .sort((a, b) => a.debut.localeCompare(b.debut))
+      .slice(0, 4);
+
+    const prochaineTravaux = travauxFuturs[0];
+
+    travauxFuturs.forEach((travaux) => {
+      travaux.dateDebut =
+        travaux.debut.slice(6, 8) + "/" + travaux.debut.slice(4, 6);
+
+      travaux.dateFin = travaux.fin.slice(6, 8) + "/" + travaux.fin.slice(4, 6);
+    });
+
     res.render("index.ejs", {
       meteos,
       creneaux: creneauxEvalues,
       departsRetour,
       departsTrilportDepart,
       arrivesTrilport,
-      messages,
+      texteAlerte,
       statutDeparts,
       traduireCodeMeteo,
+      niveauTrafic,
+      prochaineTravaux,
+      travauxFuturs,
+      afficherAlerteCarte,
     });
   } catch (error) {
     console.error(error.message);
@@ -175,8 +216,11 @@ app.get("/", async (req, res) => {
     res.render("index.ejs", {
       meteos: [],
       creneaux: [],
-      messages: [],
+      texteAlerte: null,
       erreur: error.message,
+      niveauTrafic: "fluide",
+      afficherAlerteCarte: false,
+      prochaineTravaux: null,
     });
   }
 });

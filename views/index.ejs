@@ -39,7 +39,7 @@
 
     <%# Carte principale : Trilport %>
     <article class="carte carte-principale">
-      <% if (messages && messages.length > 0) { %>
+      <% if (afficherAlerteCarte) { %>
       <span class="carte-alerte">⚠️</span>
       <% } %>
       <div class="carte-contenu">
@@ -168,21 +168,52 @@
   <% } %>
 
   <%# Bandeau trafic — fixé en bas de page %>
-  <div class="bandeau-trafic <%= messages && messages.length > 0 ? 'perturbe' : 'fluide' %>">
-    <% if (messages && messages.length > 0) { %>
-    <span class="bandeau-icone">⚠️</span>
-    <span class="bandeau-texte"><%= messages[0].texte %></span>
-    <% } else { %>
+  <div class="bandeau-trafic <%= niveauTrafic %>">
+
+    <% if (niveauTrafic === "fluide") { %>
     <span class="bandeau-icone">🟢</span>
-    <span class="bandeau-texte">Trafic fluide — Ligne P</span>
+    <span>Trafic fluide</span>
+
+    <% } else if (niveauTrafic === "info") { %>
+    <span class="bandeau-icone">🟠</span>
+    <span>Perturbation sur la ligne P</span>
+
+    <% } else if (niveauTrafic === "alerte") { %>
+    <span class="bandeau-icone">🔴</span>
+    <span>
+      <%= texteAlerte %> </span>
     <% } %>
+
   </div>
+  <% if (prochaineTravaux) { %>
+
+  <div class="bandeau-travaux" id="travaux-toggle">
+    <span>📅</span>
+    <span>Travaux Ligne P ▼</span>
+  </div>
+
+  <div class="travaux-liste" id="travaux-liste">
+    <% travauxFuturs.forEach((travaux) => { %>
+    <div class="travaux-item">
+      <%= travaux.dateDebut %> →
+      <%= travaux.dateFin %>
+      <% if (travaux.trajet) { %>
+      • <%= travaux.trajet %>
+      <% } %>
+    </div>
+    <% }) %>
+
+  </div>
+
+  <% } %>
 
   <%# Script de bascule de thème %>
   <script src="/scripts/theme.js"></script>
 
   <%# Script de rafraîchissement %>
   <script src="/scripts/refresh.js"></script>
+
+  <script src="/scripts/travaux.js"></script>
 </body>
 
 </html>
