@@ -511,7 +511,7 @@ h1 span {
 
 /* Premier train — grand */
 .train-ligne.principal .train-heure {
-  font-size: 1.4rem;
+  font-size: 2rem;
 }
 .train-ligne.principal .dest-long,
 .train-ligne.principal .dest-court {
@@ -563,6 +563,14 @@ h1 span {
 .train-ligne.secondaire .train-heure {
   font-size: 0.8rem;
   opacity: 0.5;
+}
+.trains-gare.departs .train-ligne.secondaire .train-heure {
+  font-size: 1.4rem;
+  opacity: 0.8;
+  color: #59dde9;
+}
+.trains-gare.departs .train-ligne.secondaire .dest-long {
+  color: #67e8f9;
 }
 
 /* Hover sur le premier */
@@ -637,12 +645,6 @@ h1 span {
   font-family: var(--font-mono);
   font-size: 0.8rem;
   z-index: 100;
-}
-
-.bandeau-trafic.fluide {
-  background: rgba(34, 197, 94, 0.12);
-  border-top: 1px solid rgba(34, 197, 94, 0.3);
-  color: #4ade80;
 }
 
 .bandeau-trafic.fluide {
