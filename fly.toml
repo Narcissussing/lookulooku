@@ -1,5 +1,5 @@
 app = "lookulooku"
-primary_region = "cdg"
+primary_region = "ams"
 
 [build]
 
