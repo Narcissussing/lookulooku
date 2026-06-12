@@ -81,6 +81,11 @@ const heuresRecherchees = [
 app.set("view engine", "ejs");
 app.use(express.static("public"));
 
+// Construire les données météo pour les créneaux
+let cacheMeteo = null;
+let dernierAppelMeteo = null;
+const DUREE_CACHE = 30 * 60 * 1000;
+
 app.get("/", async (req, res) => {
   try {
     const passagesMeaux = await recupererProchainsPassages(
@@ -107,9 +112,18 @@ app.get("/", async (req, res) => {
       ["Château-Thierry", "La Ferté-Milon"],
       2,
     );
+    const maintenant = Date.now();
+    const cacheExpire =
+      !cacheMeteo || maintenant - dernierAppelMeteo > DUREE_CACHE;
 
-    const meteos = await Promise.all(villes.map(recupererMeteo));
-    const previsions = await Promise.all(villes.map(recupererPrevisions));
+    if (cacheExpire) {
+      const meteos = await Promise.all(villes.map(recupererMeteo));
+      const previsions = await Promise.all(villes.map(recupererPrevisions));
+      cacheMeteo = { meteos, previsions };
+      dernierAppelMeteo = maintenant;
+    }
+
+    const { meteos, previsions } = cacheMeteo;
 
     // await new Promise((resolve) => setTimeout(resolve, 1000));
     const infosTrafic = await recupererInfosTrafic();
@@ -122,7 +136,7 @@ app.get("/", async (req, res) => {
         m.cause === "PERTURBATION" && m.estAujourdhui && m.concerneMonTrajet,
     );
     const texteAlerte = perturbations[0]?.texte ?? null;
-    
+
     const informations = messages.filter(
       (m) => m.cause === "INFORMATION" && m.estAujourdhui,
     );
@@ -181,9 +195,7 @@ app.get("/", async (req, res) => {
     }
 
     const travauxFuturs = messages
-      .filter(
-        (m) => m.cause === "TRAVAUX" && m.concerneMonTrajet,
-      )
+      .filter((m) => m.cause === "TRAVAUX" && m.concerneMonTrajet)
       .sort((a, b) => a.debut.localeCompare(b.debut))
       .slice(0, 4);
 
@@ -195,9 +207,6 @@ app.get("/", async (req, res) => {
 
       travaux.dateFin = travaux.fin.slice(6, 8) + "/" + travaux.fin.slice(4, 6);
     });
-    console.log([...new Set(departsTrilport.map(d => d.destination))]);
-    
-    
 
     res.render("index.ejs", {
       meteos,
@@ -214,7 +223,12 @@ app.get("/", async (req, res) => {
       afficherAlerteCarte,
     });
   } catch (error) {
-    console.error("Erreur API:", error.config?.url, error.response?.status, error.message);
+    console.error(
+      "Erreur API:",
+      error.config?.url,
+      error.response?.status,
+      error.message,
+    );
 
     res.render("index.ejs", {
       meteos: [],
