@@ -64,7 +64,9 @@ export function extraireDeparts(data) {
   return visites.map((visite) => {
     const heure = extraireHoraires(visite);
     const destination =
-      visite?.MonitoredVehicleJourney?.DestinationName?.[0]?.value;
+      visite?.MonitoredVehicleJourney?.DestinationName?.[0]?.value
+        ?.replace(/Ch.teau-Thierry/u, "Château-Thierry")
+        ?.replace(/La Fert.-Milon/u, "La Ferté-Milon");
 
     return {
       destination,
@@ -212,7 +214,10 @@ export function construireDonneesMeteo(
 // Filtrer et trier les départs par destination
 export function filtrerDeparts(trains, destinations, limite = null) {
   const resultat = trains
-    .filter((train) => destinations.includes(train.destination))
+    .filter(
+      (train) =>
+        destinations.includes(train.destination) && train.dansXMin >= -2,
+    )
     .sort((a, b) => new Date(a.heure) - new Date(b.heure));
   return limite ? resultat.slice(0, limite) : resultat;
 }

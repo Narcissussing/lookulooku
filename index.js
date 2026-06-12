@@ -195,6 +195,8 @@ app.get("/", async (req, res) => {
 
       travaux.dateFin = travaux.fin.slice(6, 8) + "/" + travaux.fin.slice(4, 6);
     });
+    console.log([...new Set(departsTrilport.map(d => d.destination))]);
+    
     
 
     res.render("index.ejs", {
@@ -212,7 +214,7 @@ app.get("/", async (req, res) => {
       afficherAlerteCarte,
     });
   } catch (error) {
-    console.error("Erreur API:", error.config?.url, error.message);
+    console.error("Erreur API:", error.config?.url, error.response?.status, error.message);
 
     res.render("index.ejs", {
       meteos: [],
