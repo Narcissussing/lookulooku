@@ -84,7 +84,7 @@ app.use(express.static("public"));
 // Construire les données météo pour les créneaux
 let cacheMeteo = null;
 let dernierAppelMeteo = null;
-const DUREE_CACHE = 30 * 60 * 1000;
+const DUREE_CACHE = 15 * 60 * 1000;
 
 app.get("/", async (req, res) => {
   try {
