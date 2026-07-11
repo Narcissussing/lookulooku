@@ -9,10 +9,12 @@ async function rafraichirTableauDeBord() {
 
   miseAJourEnCours = true;
 
-  const travauxOuverts = document
-    .getElementById("travaux-toggle")
-    ?.classList.contains("ouvert");
-  const traficOuvert = !document.getElementById("trafic-details")?.hidden;
+  const boutonTravauxActuel = document.getElementById("travaux-toggle");
+  const detailsTraficActuels = document.getElementById("trafic-details");
+  const travauxOuverts = boutonTravauxActuel
+    ? boutonTravauxActuel.classList.contains("ouvert")
+    : false;
+  const traficOuvert = detailsTraficActuels ? !detailsTraficActuels.hidden : false;
 
   try {
     const response = await fetch("/", { cache: "no-store" });
@@ -25,14 +27,16 @@ async function rafraichirTableauDeBord() {
     const nouveauTableau = documentMisAJour.getElementById("dashboard-content");
     if (!nouveauTableau) throw new Error("Tableau de bord introuvable");
 
-    tableauActuel.replaceWith(nouveauTableau);
+    tableauActuel.parentNode.replaceChild(nouveauTableau, tableauActuel);
 
     if (travauxOuverts) {
       const boutonTravaux = document.getElementById("travaux-toggle");
       const listeTravaux = document.getElementById("travaux-liste");
-      boutonTravaux?.classList.add("ouvert");
-      boutonTravaux?.setAttribute("aria-expanded", "true");
-      listeTravaux?.classList.add("ouvert");
+      if (boutonTravaux) {
+        boutonTravaux.classList.add("ouvert");
+        boutonTravaux.setAttribute("aria-expanded", "true");
+      }
+      if (listeTravaux) listeTravaux.classList.add("ouvert");
     }
 
     if (traficOuvert) {

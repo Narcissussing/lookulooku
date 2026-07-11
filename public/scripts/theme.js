@@ -13,14 +13,16 @@ const bouton = document.querySelector(".theme-toggle");
 if (bouton) mettreAJourBouton(themeActuel);
 
 // Au clic, on bascule entre les deux thèmes
-bouton?.addEventListener("click", () => {
-  const courant = document.documentElement.getAttribute("data-theme");
-  const nouveau = courant === "bureau" ? "cinema" : "bureau";
+if (bouton) {
+  bouton.addEventListener("click", () => {
+    const courant = document.documentElement.getAttribute("data-theme");
+    const nouveau = courant === "bureau" ? "cinema" : "bureau";
 
-  document.documentElement.setAttribute("data-theme", nouveau);
-  localStorage.setItem("theme", nouveau);
-  mettreAJourBouton(nouveau);
-});
+    document.documentElement.setAttribute("data-theme", nouveau);
+    localStorage.setItem("theme", nouveau);
+    mettreAJourBouton(nouveau);
+  });
+}
 
 // Met à jour l'icône et le label du bouton selon le thème actif
 function mettreAJourBouton(theme) {

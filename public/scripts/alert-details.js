@@ -13,6 +13,9 @@ document.addEventListener("click", (event) => {
 
   if (boutonFermer) {
     details.hidden = true;
-    document.getElementById("trafic-toggle")?.setAttribute("aria-expanded", "false");
+    const boutonTraficActuel = document.getElementById("trafic-toggle");
+    if (boutonTraficActuel) {
+      boutonTraficActuel.setAttribute("aria-expanded", "false");
+    }
   }
 });
