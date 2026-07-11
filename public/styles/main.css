@@ -117,7 +117,7 @@ body {
   font-family: var(--font-sans);
   font-size: 15px;
   line-height: 1.4;
-  padding: 1.5rem;
+  padding: 1.5rem 1.5rem 5rem;
   transition:
     background var(--transition),
     color var(--transition);
@@ -324,6 +324,15 @@ h1 span {
   font-size: 0.75rem;
   font-family: var(--font-mono);
   margin-top: 0.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.carte-principale .temp-journee {
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  margin-top: 0.35rem;
   position: relative;
   z-index: 1;
 }
@@ -554,6 +563,14 @@ h1 span {
   opacity: 0.5;
 }
 
+.statut-service.attente {
+  color: #f59e0b;
+}
+
+.statut-service.indisponible {
+  color: var(--status-parapluie);
+}
+
 .statut-service.bientot {
   color: #f59e0b;
   animation: clignoter 2s ease-in-out infinite;
@@ -664,6 +681,93 @@ h1 span {
   border-top: 1px solid rgba(239, 68, 68, 0.4);
   color: #f87171;
 }
+
+.trafic-interactif {
+  width: 100%;
+  border-right: none;
+  border-bottom: none;
+  border-left: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.trafic-interactif:focus-visible,
+.trafic-details-fermer:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.trafic-fleche {
+  margin-left: auto;
+  font-size: 1rem;
+}
+
+.trafic-details {
+  position: fixed;
+  z-index: 101;
+  right: 1.5rem;
+  bottom: 3.5rem;
+  left: 1.5rem;
+  max-width: 650px;
+  margin: auto;
+  padding: 1rem 1.25rem;
+  background: var(--surface);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-hover);
+  color: var(--text);
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.trafic-details[hidden] {
+  display: none;
+}
+
+.trafic-details-entete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.trafic-details h2 {
+  font-family: var(--font-display);
+  font-size: 1rem;
+}
+
+.trafic-details p {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  white-space: pre-line;
+}
+
+.trafic-details .trafic-details-meta {
+  margin-top: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+}
+
+.trafic-details-fermer {
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.bandeau-trafic.indisponible {
+  background: rgba(138, 147, 163, 0.12);
+  border-top: 1px solid rgba(138, 147, 163, 0.3);
+  color: var(--text-muted);
+}
+
 .bandeau-travaux {
   margin-top: 1rem;
   background: var(--surface);
@@ -679,6 +783,10 @@ h1 span {
 
   font-family: var(--font-mono);
   font-size: 0.8rem;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  user-select: none;
 }
 
 .bandeau-travaux .trajet {
@@ -771,9 +879,10 @@ h1 span {
   opacity: 1;
   padding-top: 12px;
 }
-.bandeau-travaux {
-  cursor: pointer;
-  user-select: none;
+.theme-toggle:focus-visible,
+.bandeau-travaux:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
 }
 /* ──────────────────────────────────────────
    Statut train dans les créneaux
@@ -792,6 +901,11 @@ h1 span {
 
 .train-statut.passe {
   opacity: 0.5;
+}
+
+.train-statut.indisponible {
+  color: var(--status-parapluie);
+  font-size: 0.7rem;
 }
 
 /* Clignotement de l'icône en cas de perturbation */
@@ -860,10 +974,29 @@ h1 span {
     position: static;
     margin-top: 1rem;
   }
+  .trafic-details {
+    position: static;
+    max-width: none;
+    margin: 0.5rem 0 1rem;
+  }
+  body {
+    padding-bottom: 1.5rem;
+  }
   .dest-long {
     display: none;
   }
   .dest-court {
     display: inline;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
   }
 }

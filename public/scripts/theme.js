@@ -10,10 +10,10 @@ document.documentElement.setAttribute("data-theme", themeActuel);
 const bouton = document.querySelector(".theme-toggle");
 
 // On met à jour l'icône au chargement
-mettreAJourBouton(themeActuel);
+if (bouton) mettreAJourBouton(themeActuel);
 
 // Au clic, on bascule entre les deux thèmes
-bouton.addEventListener("click", () => {
+bouton?.addEventListener("click", () => {
   const courant = document.documentElement.getAttribute("data-theme");
   const nouveau = courant === "bureau" ? "cinema" : "bureau";
 

@@ -12,6 +12,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Outfit:wght@400;600&family=Playfair+Display:wght@400;600&display=swap" rel="stylesheet">
 
+  <script>
+    try {
+      document.documentElement.setAttribute("data-theme", localStorage.getItem("theme") || "bureau");
+    } catch (_) {}
+  </script>
   <link rel="stylesheet" href="/styles/main.css">
 </head>
 
@@ -27,6 +32,7 @@
     <button class="theme-toggle" aria-label="Changer de thème">🌙</button>
   </header>
 
+  <main id="dashboard-content">
   <% if (locals.erreur) { %>
   <%# Cas d'erreur %>
   <p class="erreur">Oups : <%= erreur %></p>
@@ -49,6 +55,7 @@
           <p class="temp"><%= meteos[0].current.temperature_2m.toFixed(1) %>°C</p>
           <p class="description"><%= traduireCodeMeteo(meteos[0].current.weather_code) %></p>
           <p class="ressenti">Ressenti <%= meteos[0].current.apparent_temperature.toFixed(1) %>°C</p>
+          <p class="temp-journee">↓ <%= meteos[0].daily.temperature_2m_min[0].toFixed(0) %>° · ↑ <%= meteos[0].daily.temperature_2m_max[0].toFixed(0) %>°</p>
         </div>
 
         <div class="trains-panneau">
@@ -65,7 +72,7 @@
             </div>
             <% }) %>
             <% } else { %>
-            <span class="statut-service termine">Terminé</span>
+            <span class="statut-service <%= statutDeparts %>"><%= statutDeparts === "indisponible" ? "Indisponible" : statutDeparts === "attente" ? "En attente" : "Terminé" %></span>
             <% } %>
           </div>
 
@@ -81,7 +88,7 @@
             </div>
             <% }) %>
             <% } else { %>
-            <span class="statut-service termine">Terminé</span>
+            <span class="statut-service <%= statutArrivees %>"><%= statutArrivees === "indisponible" ? "Indisponible" : statutArrivees === "attente" ? "En attente" : "Terminé" %></span>
             <% } %>
           </div>
 
@@ -126,6 +133,8 @@
             </ul>
             <% } else if (c.statutTrain === "passe") { %>
             <span class="train-statut passe">🚫</span>
+            <% } else if (c.statutTrain === "indisponible") { %>
+            <span class="train-statut indisponible">Indisponible</span>
             <% } else { %>
             <span class="train-statut attente">· · ·</span>
             <% } %>
@@ -153,6 +162,8 @@
             </ul>
             <% } else if (c.statutTrain === "passe") { %>
             <span class="train-statut passe">🚫</span>
+            <% } else if (c.statutTrain === "indisponible") { %>
+            <span class="train-statut indisponible">Indisponible</span>
             <% } else { %>
             <span class="train-statut attente">· · ·</span>
             <% } %>
@@ -168,6 +179,28 @@
   <% } %>
 
   <%# Bandeau trafic — fixé en bas de page %>
+  <% if (niveauTrafic === "alerte" && detailAlerte) { %>
+  <button class="bandeau-trafic alerte trafic-interactif" id="trafic-toggle" type="button" aria-expanded="false" aria-controls="trafic-details">
+    <span class="bandeau-icone">🔴</span>
+    <span><%= texteAlerte %></span>
+    <span class="trafic-fleche" aria-hidden="true">ⓘ</span>
+  </button>
+
+  <section class="trafic-details" id="trafic-details" aria-label="Détails de la perturbation" hidden>
+    <div class="trafic-details-entete">
+      <h2>Détails de la perturbation</h2>
+      <button class="trafic-details-fermer" type="button" aria-label="Fermer les détails">×</button>
+    </div>
+    <p><%= detailAlerte.details %></p>
+    <% if (detailAlerte.trajet) { %>
+    <p class="trafic-details-meta">Trajet : <%= detailAlerte.trajet %></p>
+    <% } %>
+    <% if (detailAlerte.debut) { %>
+    <p class="trafic-details-meta">Du <%= formaterDatePerturbation(detailAlerte.debut) %> au <%= formaterDatePerturbation(detailAlerte.fin) %></p>
+    <% } %>
+  </section>
+
+  <% } else { %>
   <div class="bandeau-trafic <%= niveauTrafic %>">
 
     <% if (niveauTrafic === "fluide") { %>
@@ -182,16 +215,20 @@
     <span class="bandeau-icone">🔴</span>
     <span>
       <%= texteAlerte %> </span>
+    <% } else { %>
+    <span class="bandeau-icone">⚪</span>
+    <span>Infos trafic temporairement indisponibles</span>
     <% } %>
 
   </div>
+  <% } %>
   <% if (prochaineTravaux) { %>
 
-  <div class="bandeau-travaux" id="travaux-toggle">
+  <button class="bandeau-travaux" id="travaux-toggle" type="button" aria-expanded="false" aria-controls="travaux-liste">
     <span>📅</span>
     <span>Travaux Ligne P</span>
     <span class="fleche">▶</span>
-  </div>
+  </button>
 
   <div class="travaux-liste" id="travaux-liste">
     <% travauxFuturs.forEach((travaux) => { %>
@@ -208,6 +245,8 @@
 
   <% } %>
 
+  </main>
+
   <%# Script de bascule de thème %>
   <script src="/scripts/theme.js"></script>
 
@@ -216,6 +255,9 @@
 
   <%# Scrpt pour basculer la liste de travaux %>
   <script src="/scripts/travaux.js"></script>
+
+  <%# Script pour afficher le détail des alertes trafic %>
+  <script src="/scripts/alert-details.js"></script>
 </body>
 
 </html>

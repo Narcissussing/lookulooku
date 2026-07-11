@@ -3,8 +3,7 @@ import express from "express";
 
 import {
   recupererProchainsPassages,
-  recupererMeteo,
-  recupererPrevisions,
+  recupererDonneesMeteo,
   recupererInfosTrafic,
 } from "./services/api.js";
 import {
@@ -14,11 +13,16 @@ import {
   enrichirCreneaux,
   filtrerDeparts,
   evaluerCreneau,
+  formaterDatePerturbation,
   traduireCodeMeteo,
 } from "./services/utils.js";
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
+
+if (!process.env.IDFM_API_KEY) {
+  throw new Error("La variable d'environnement IDFM_API_KEY est requise.");
+}
 
 const villes = [
   {
@@ -84,20 +88,70 @@ app.use(express.static("public"));
 // Construire les données météo pour les créneaux
 let cacheMeteo = null;
 let dernierAppelMeteo = null;
+let requeteMeteoEnCours = null;
 const DUREE_CACHE = 15 * 60 * 1000;
+
+async function obtenirMeteo() {
+  const maintenant = Date.now();
+  if (cacheMeteo && maintenant - dernierAppelMeteo <= DUREE_CACHE) {
+    return cacheMeteo;
+  }
+
+  if (!requeteMeteoEnCours) {
+    requeteMeteoEnCours = Promise.all(villes.map(recupererDonneesMeteo))
+      .then((donnees) => {
+        cacheMeteo = {
+          meteos: donnees,
+          previsions: donnees,
+        };
+        dernierAppelMeteo = Date.now();
+        return cacheMeteo;
+      })
+      .finally(() => {
+        requeteMeteoEnCours = null;
+      });
+  }
+
+  try {
+    return await requeteMeteoEnCours;
+  } catch (error) {
+    if (cacheMeteo) return cacheMeteo;
+    throw error;
+  }
+}
+
+function resultatOuTableau(resultat) {
+  return resultat.status === "fulfilled" ? extraireDeparts(resultat.value) : [];
+}
+
+function statutService(departs, disponible) {
+  if (!disponible) return "indisponible";
+  if (departs.length > 0) return "ok";
+
+  const heureParis = Number(
+    new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Europe/Paris",
+      hour: "2-digit",
+      hourCycle: "h23",
+    }).format(new Date()),
+  );
+  return heureParis < 5 ? "attente" : heureParis >= 23 ? "termine" : "attente";
+}
 
 app.get("/", async (req, res) => {
   try {
-    const passagesMeaux = await recupererProchainsPassages(
-      "STIF:StopArea:SP:43161:",
-    );
+    const [resultatMeaux, resultatTrilport, resultatTrafic, resultatMeteo] =
+      await Promise.allSettled([
+        recupererProchainsPassages("STIF:StopArea:SP:43161:"),
+        recupererProchainsPassages("STIF:StopArea:SP:47962:"),
+        recupererInfosTrafic(),
+        obtenirMeteo(),
+      ]);
 
-    const passagesTrilport = await recupererProchainsPassages(
-      "STIF:StopArea:SP:47962:",
-    );
-
-    const departsMeaux = extraireDeparts(passagesMeaux);
-    const departsTrilport = extraireDeparts(passagesTrilport);
+    const departsMeaux = resultatOuTableau(resultatMeaux);
+    const departsTrilport = resultatOuTableau(resultatTrilport);
+    const meauxDisponible = resultatMeaux.status === "fulfilled";
+    const trilportDisponible = resultatTrilport.status === "fulfilled";
 
     // Départs Trilport → Meaux / Paris
     const departsTrilportDepart = filtrerDeparts(
@@ -112,22 +166,14 @@ app.get("/", async (req, res) => {
       ["Château-Thierry", "La Ferté-Milon"],
       2,
     );
-    const maintenant = Date.now();
-    const cacheExpire =
-      !cacheMeteo || maintenant - dernierAppelMeteo > DUREE_CACHE;
-
-    if (cacheExpire) {
-      const meteos = await Promise.all(villes.map(recupererMeteo));
-      const previsions = await Promise.all(villes.map(recupererPrevisions));
-      cacheMeteo = { meteos, previsions };
-      dernierAppelMeteo = maintenant;
-    }
-
-    const { meteos, previsions } = cacheMeteo;
-
-    // await new Promise((resolve) => setTimeout(resolve, 1000));
-    const infosTrafic = await recupererInfosTrafic();
-    // const infosTrafic = { disruptions: [] }; // données de test vides
+    const { meteos, previsions } =
+      resultatMeteo.status === "fulfilled"
+        ? resultatMeteo.value
+        : { meteos: [], previsions: [] };
+    const infosTrafic =
+      resultatTrafic.status === "fulfilled"
+        ? resultatTrafic.value
+        : { disruptions: [] };
     const messages = extraireMessages(infosTrafic);
 
     // Déterminer le niveau d'alerte trafic
@@ -136,12 +182,14 @@ app.get("/", async (req, res) => {
         m.cause === "PERTURBATION" && m.estAujourdhui && m.concerneMonTrajet,
     );
     const texteAlerte = perturbations[0]?.texte ?? null;
+    const detailAlerte = perturbations[0] ?? null;
 
     const informations = messages.filter(
       (m) => m.cause === "INFORMATION" && m.estAujourdhui,
     );
 
-    let niveauTrafic = "fluide";
+    let niveauTrafic =
+      resultatTrafic.status === "fulfilled" ? "fluide" : "indisponible";
     const afficherAlerteCarte = perturbations.length > 0;
     if (perturbations.length > 0) {
       niveauTrafic = "alerte";
@@ -161,20 +209,15 @@ app.get("/", async (req, res) => {
       "Paris Est",
     ]);
 
-    const donneesMeteo = construireDonneesMeteo(
-      previsions,
-      meteos,
-      villes,
-      heuresRecherchees,
+    const donneesMeteo =
+      meteos.length === villes.length && previsions.length === villes.length
+        ? construireDonneesMeteo(previsions, meteos, villes, heuresRecherchees)
+        : [];
+    const statutDeparts = statutService(
+      departsTrilportDepart,
+      trilportDisponible,
     );
-    let statutDeparts;
-    if (departsTrilportDepart.length > 0) {
-      statutDeparts = "ok";
-    } else {
-      // Vérifier si c'est trop tôt ou trop tard
-      // Pour l'instant on n'a pas l'heure du premier train de la journée
-      statutDeparts = "termine";
-    }
+    const statutArrivees = statutService(arrivesTrilport, trilportDisponible);
 
     // On enrichit chaque créneau avec verdicts, score et résumé
     const creneauxEvalues = enrichirCreneaux(
@@ -182,6 +225,14 @@ app.get("/", async (req, res) => {
       departsAller,
       departsRetour,
     );
+    for (const creneau of creneauxEvalues) {
+      if (
+        (creneau.direction === "aller" && !trilportDisponible) ||
+        (creneau.direction === "retour" && !meauxDisponible)
+      ) {
+        creneau.statutTrain = "indisponible";
+      }
+    }
     // Marquer le meilleur créneau aller et retour
     for (const direction of ["aller", "retour"]) {
       const creneauxDirection = creneauxEvalues.filter(
@@ -215,7 +266,10 @@ app.get("/", async (req, res) => {
       departsTrilportDepart,
       arrivesTrilport,
       texteAlerte,
+      detailAlerte,
+      formaterDatePerturbation,
       statutDeparts,
+      statutArrivees,
       traduireCodeMeteo,
       niveauTrafic,
       prochaineTravaux,
@@ -234,6 +288,7 @@ app.get("/", async (req, res) => {
       meteos: [],
       creneaux: [],
       texteAlerte: null,
+      detailAlerte: null,
       erreur: error.message,
       niveauTrafic: "fluide",
       afficherAlerteCarte: false,
